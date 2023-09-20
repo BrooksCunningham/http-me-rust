@@ -1,6 +1,8 @@
 # Demo for DevSecOps
 
-Using rust to demo DevSecOps.
+Using rust to demo DevSecOps. 
+
+Check out the Github Actions.
 
 ## Security issues
 
