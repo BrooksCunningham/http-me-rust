@@ -1,0 +1,4 @@
+
+target/*
+pkg/http-me-rust.tar.gz
+bin/main.wasm

@@ -1,0 +1,28 @@
+# This file describes a Fastly Compute@Edge package. To learn more visit:
+# https://developer.fastly.com/reference/fastly-toml/
+
+authors = ["brookscunningham@gmail.com"]
+description = "http-me-rust"
+language = "rust"
+manifest_version = 3
+name = "http-me-rust"
+service_id = ""
+
+[local_server]
+
+  [local_server.backends]
+
+    [local_server.backends.backend_httpme]
+      url = "http://http-me.glitch.me/"
+
+    [local_server.backends.backend_ngwaf]
+      url = "http://127.0.0.1:8080/"
+
+[setup]
+
+  [setup.backends]
+
+    [setup.backends.backend_httpme]
+      address = "http-me.glitch.me"
+      description = "HTTP me is a tiny express app initally designed to replicate the features of HTTPBin.org"
+      port = 443
