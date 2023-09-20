@@ -2,7 +2,7 @@
 
 Using rust to demo DevSecOps. 
 
-Check out the Github Actions.
+Check out the Github Actions. The Github Actions are defined in the folder `.github/workflows/`
 
 ## Security issues
 
