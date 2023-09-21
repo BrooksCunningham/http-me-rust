@@ -2,8 +2,7 @@ name: "Test requests"
  
 on:
   push:
-    tags:
-      - '**'
+    branches: [main]
  
 jobs:
   run-updater:
