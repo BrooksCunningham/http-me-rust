@@ -1,0 +1,14 @@
+name: "Test requests"
+ 
+on:
+  push:
+    tags:
+      - '**'
+ 
+jobs:
+  run-updater:
+    runs-on: ubuntu-latest
+    steps:
+    - name: homepage request
+      run: |
+        curl -X GET "https://http-me.edgecompute.app/"
