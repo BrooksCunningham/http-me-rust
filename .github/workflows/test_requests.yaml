@@ -1,4 +1,4 @@
-name: "Test requests"
+name: "Test requests with ngwaf"
  
 on:
   push:
@@ -7,7 +7,17 @@ on:
 jobs:
   run-updater:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
+    - name: install ngwaf
+      run: |
+       sudo apt-get update
+       sudo apt-get install -y apt-transport-https wget gnupg
+       wget -qO - https://apt.signalsciences.net/release/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/sigsci.gpg
+       sudo echo "deb [signed-by=/usr/share/keyrings/sigsci.gpg] https://apt.signalsciences.net/release/ubuntu/ jammy main" | sudo tee /etc/apt/sources.list.d/sigsci-release.list
+       sudo apt-get update
     - name: homepage request
       run: |
         curl -X GET "https://http-me.edgecompute.app/"
+    
+    
