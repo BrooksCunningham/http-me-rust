@@ -3,7 +3,8 @@ name: "Test requests with ngwaf"
 on:
   push:
     branches: [main]
- 
+
+ # https://docs.fastly.com/en/ngwaf/installing-the-agent-on-ubuntu#install-and-configure-the-signal-sciences-agent-package
 jobs:
   run-updater:
     runs-on: ubuntu-latest
@@ -16,6 +17,10 @@ jobs:
        wget -qO - https://apt.signalsciences.net/release/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/sigsci.gpg
        sudo echo "deb [signed-by=/usr/share/keyrings/sigsci.gpg] https://apt.signalsciences.net/release/ubuntu/ jammy main" | sudo tee /etc/apt/sources.list.d/sigsci-release.list
        sudo apt-get update
+       sudo apt-get install sigsci-agent
+    - name: start ngwaf
+      run: |
+        sudo service sigsci-agent start
     - name: homepage request
       run: |
         curl -X GET "https://http-me.edgecompute.app/"
