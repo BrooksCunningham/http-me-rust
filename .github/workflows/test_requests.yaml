@@ -21,6 +21,7 @@ jobs:
     - name: start ngwaf
       run: |
         sudo service sigsci-agent start
+        /usr/sbin/sigsci-agent
     - name: homepage request
       run: |
         curl -X GET "https://http-me.edgecompute.app/"
