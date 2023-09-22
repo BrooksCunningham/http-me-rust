@@ -11,8 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
+    - uses: actions/checkout@v3
     - name: Set up Fastly CLI
       uses: fastly/compute-actions/setup@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Run local Compute
       run: |
         fastly compute serve &
