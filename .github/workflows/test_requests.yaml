@@ -5,6 +5,7 @@ on:
     branches: [main]
 
  # https://docs.fastly.com/en/ngwaf/installing-the-agent-on-ubuntu#install-and-configure-the-signal-sciences-agent-package
+ # sudo service sigsci-agent start
 jobs:
   run-updater:
     runs-on: ubuntu-latest
@@ -18,12 +19,18 @@ jobs:
        sudo echo "deb [signed-by=/usr/share/keyrings/sigsci.gpg] https://apt.signalsciences.net/release/ubuntu/ jammy main" | sudo tee /etc/apt/sources.list.d/sigsci-release.list
        sudo apt-get update
        sudo apt-get install sigsci-agent
+      env:
+        SIGSCI_ACCESSKEYID: ${{ secrets.ACCESSKEYID }}
+        SIGSCI_SECRETACCESSKEY: ${{ secrets.SECRETACCESSKEY }}
+        SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"       
     - name: start ngwaf
       run: |
-        sudo service sigsci-agent start
-        /usr/sbin/sigsci-agent
+        /usr/sbin/sigsci-agent 
     - name: homepage request
       run: |
-        curl -X GET "https://http-me.edgecompute.app/"
+        curl -X GET "https://0.0.0.0:8888/"
+        # curl -X GET "https://http-me.edgecompute.app/"
+        
+        
     
     
