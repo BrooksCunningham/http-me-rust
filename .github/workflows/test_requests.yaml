@@ -21,6 +21,7 @@ jobs:
     - name: Run local Compute # skips the build process
       run: |
         fastly compute serve --skip-build &
+        sleep 5
         curl -si -X GET "http://0.0.0.0:7676/anything/from-gh-action-c-and-e"
     - name: install ngwaf
       run: |
@@ -34,7 +35,8 @@ jobs:
       env:
        SIGSCI_ACCESSKEYID: ${{ secrets.ACCESSKEYID }}
        SIGSCI_SECRETACCESSKEY: ${{ secrets.SECRETACCESSKEY }}
-       SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"
+       SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=http://0.0.0.0:7676/,pass-host-header=false}"
+      #  "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"
       run: |
         /usr/sbin/sigsci-agent &
         ps
