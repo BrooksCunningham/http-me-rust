@@ -30,7 +30,7 @@ jobs:
     - name: homepage request
     # curl -X GET "https://http-me.edgecompute.app/"
       run: |
-        curl -X GET "http://0.0.0.0:8888/"
+        curl -X GET "http://0.0.0.0:8888/anything/from-gh-action"
         
     - name: stop ngwaf
       run: |
