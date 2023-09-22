@@ -21,7 +21,6 @@ jobs:
     - name: Run local Compute # skips the build process
       run: |
         fastly compute serve --skip-build &
-        sleep 20
         curl -si -X GET "http://0.0.0.0:7676/anything/from-gh-action-c-and-e"
     - name: install ngwaf
       run: |
