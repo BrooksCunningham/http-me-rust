@@ -23,10 +23,10 @@ jobs:
        SIGSCI_ACCESSKEYID: ${{ secrets.ACCESSKEYID }}
        SIGSCI_SECRETACCESSKEY: ${{ secrets.SECRETACCESSKEY }}
        SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"
-       SUPER_SECRET_TEST: ${{ secrets.SuperSecretTest }}
+       SUPER_SECRET_TEST: ${{ secrets.SUPERSECRETTEST }}
     - name: gh secrets test
       run: |
-        echo $SUPER_SECRET_TEST
+        echo "$SUPER_SECRET_TEST"
         echo "Did it print?"
     - name: start ngwaf
       run: |
