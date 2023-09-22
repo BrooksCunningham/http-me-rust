@@ -7,7 +7,7 @@ on:
  # https://docs.fastly.com/en/ngwaf/installing-the-agent-on-ubuntu#install-and-configure-the-signal-sciences-agent-package
  # sudo service sigsci-agent start
 jobs:
-  run-updater:
+  run-waf-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -20,9 +20,13 @@ jobs:
        sudo apt-get update
        sudo apt-get install sigsci-agent
       env:
-        SIGSCI_ACCESSKEYID: ${{ secrets.ACCESSKEYID }}
-        SIGSCI_SECRETACCESSKEY: ${{ secrets.SECRETACCESSKEY }}
-        SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"       
+       SIGSCI_ACCESSKEYID: ${{ secrets.ACCESSKEYID }}
+       SIGSCI_SECRETACCESSKEY: ${{ secrets.SECRETACCESSKEY }}
+       SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"
+       SUPER_SECRET: ${{ secrets.SuperSecretTest }}
+    - name: gh secrets test
+      run: |
+        echo "$SUPER_SECRET"
     - name: start ngwaf
       run: |
         /usr/sbin/sigsci-agent 
