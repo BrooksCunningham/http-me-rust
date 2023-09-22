@@ -19,7 +19,7 @@ jobs:
     - name: Run local Compute
       run: |
         fastly compute serve &
-        sleep 20 ;
+        sleep 40 ;
         curl -si -X GET "http://0.0.0.0:7676/anything/from-gh-action-c-and-e"
     - name: install ngwaf
       run: |
