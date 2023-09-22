@@ -31,11 +31,16 @@ jobs:
        SIGSCI_SECRETACCESSKEY: ${{ secrets.SECRETACCESSKEY }}
        SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"
       run: |
-        /usr/sbin/sigsci-agent 
+        /usr/sbin/sigsci-agent
+        ps
     - name: homepage request
       run: |
         curl -X GET "https://0.0.0.0:8888/"
         # curl -X GET "https://http-me.edgecompute.app/"
+    - name: stop ngwaf
+      run: |
+        killall sigsci-agent
+        ps
         
         
     
