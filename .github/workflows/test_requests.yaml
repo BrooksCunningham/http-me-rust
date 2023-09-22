@@ -27,7 +27,7 @@ jobs:
     - name: gh secrets test
       run: |
         echo "$SUPER_SECRET_TEST"
-        echo "Did it print?"
+        echo "Did it print the SUPER_SECRET_TEST?"
     - name: start ngwaf
       run: |
         /usr/sbin/sigsci-agent 
