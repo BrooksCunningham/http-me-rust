@@ -4,6 +4,17 @@ on:
   push:
     branches: [main]
 
+jobs:
+  run-compute-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+    - name: Set up Fastly CLI
+      uses: fastly/compute-actions/setup@v5
+      run: |
+        fastly compute serve &
+        curl -si -X GET "http://0.0.0.0:7676/anything/from-gh-action-c-and-e"
+
  # https://docs.fastly.com/en/ngwaf/installing-the-agent-on-ubuntu#install-and-configure-the-signal-sciences-agent-package
  # sudo service sigsci-agent start
 jobs:
@@ -36,7 +47,6 @@ jobs:
       run: |
         killall sigsci-agent
         ps
-        
         
     
     
