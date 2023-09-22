@@ -6,7 +6,7 @@ on:
 
  # https://docs.fastly.com/en/ngwaf/installing-the-agent-on-ubuntu#install-and-configure-the-signal-sciences-agent-package
  # sudo service sigsci-agent start
-
+jobs:
   run-waf-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 2
