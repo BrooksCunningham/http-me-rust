@@ -26,7 +26,8 @@ jobs:
        SUPER_SECRET: ${{ secrets.SuperSecretTest }}
     - name: gh secrets test
       run: |
-        echo "$SUPER_SECRET"
+        echo $SUPER_SECRET
+        echo "Did it print?"
     - name: start ngwaf
       run: |
         /usr/sbin/sigsci-agent 
