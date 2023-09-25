@@ -40,10 +40,10 @@ jobs:
       run: |
         /usr/sbin/sigsci-agent &
         ps
-    - name: anything endpoint request
+    - name: anything endpoint request through ngwaf and compute
     # curl -X GET "https://http-me.edgecompute.app/"
       run: |
-        curl -si -X GET "http://0.0.0.0:8888/anything/from-gh-action"
+        curl -si -X GET "http://0.0.0.0:8888/anything/from-gh-action-ngwaf-and-compute"
         
     - name: stop ngwaf
       run: |
