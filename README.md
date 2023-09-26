@@ -8,10 +8,10 @@ Check out the Github Actions. The Github Actions are defined in the folder `.git
 
 Here are some example curl requests.
 ## return a specific status code
-`curl 'https://http-me.edgecompute.app/status/302'`
+`curl -i 'https://http-me.edgecompute.app/status/302'`
 
 ## Return data sent to the server
-`curl 'https://http-me.edgecompute.app/anything/myquery?foo=bar'`
+`curl -i 'https://http-me.edgecompute.app/anything/myquery?foo=bar'`
 
 ## Security issues
 
