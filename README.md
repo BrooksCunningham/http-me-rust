@@ -6,8 +6,9 @@ Check out the Github Actions. The Github Actions are defined in the folder `.git
 
 # Sending test requests
 
-Here are some example curl requests.
-## return a specific status code
+Use curl to send requests to https://http-me.edgecompute.app
+
+## Return a specific status code
 `curl -i 'https://http-me.edgecompute.app/status/302'`
 
 ## Return data sent to the server

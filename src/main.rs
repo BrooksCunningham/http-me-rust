@@ -42,16 +42,18 @@ fn anything(mut req: Request) -> Result<Response, Error> {
     // fastly::handle::client_ip_addr
     let client_ip_addr = client_ip_addr().unwrap().to_string();
 
-    let reqUrl = req.get_url();
+    let reqUrl = req.get_url().to_owned();
 
     // https://developer.fastly.com/solutions/examples/manipulate-query-string/
     let qs = reqUrl.query().unwrap_or_else(|| "").to_string();
+    let req_method = req.get_method_str().to_owned();
 
-    let req_method = req.get_method_str();
+    let body = req.take_body_str();
+    println!("{}", &body);
 
-
-    let mut resp_data = serde_json::json!({
+    let resp_data = serde_json::json!({
         "args": &qs,
+        "body": &body,
         "headers": &reqHeadersData,
         "ip": &client_ip_addr,
         "method": &req_method,
@@ -64,14 +66,14 @@ fn anything(mut req: Request) -> Result<Response, Error> {
     Ok(resp)
 }
 
-fn status(mut req: Request) -> Result<Response, Error> {
+fn status(req: Request) -> Result<Response, Error> {
     // let reqUrlAbs = Url::parse(req.get_url_str())?;
     let reqUrl = req.get_url();
     println!("{:?}", reqUrl);
     // println!("{:?}", reqUrl.path_segments());
     // let mut path_segments = reqUrl.path_segments().ok_or_else(|| "cannot be base")?;
     println!();
-    let mut path_segments: Vec<&str> = reqUrl.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
+    let path_segments: Vec<&str> = reqUrl.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
 
     let status_str = path_segments[1];
     let statusResult = status_str.parse::<u16>();
