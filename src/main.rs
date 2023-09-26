@@ -18,10 +18,10 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     req.set_header("host", "http-me.glitch.me");
 
     match req.get_path() {
-        "/anything2/1" => {
-            Ok(anything(req)?)
+        s if s.starts_with("/status") => {
+            Ok(status(req)?)
         }
-        s if s.starts_with("/anything/") => {
+        s if s.starts_with("/anything") => {
             Ok(anything(req)?)
         }
         // Forward the request to a backend.
@@ -37,26 +37,60 @@ fn anything(mut req: Request) -> Result<Response, Error> {
     for (n, v) in req.get_headers() {
         let reqHeaderNameStr = n.as_str();
         let reqHeaderValStr = v.to_str()?;
-        // println!("Header -  {}: {}", n, reqHeaderStr);
         reqHeadersData[reqHeaderNameStr] = serde_json::json!(reqHeaderValStr);
     }
     // fastly::handle::client_ip_addr
     let client_ip_addr = client_ip_addr().unwrap().to_string();
-    println!("{:?}", &client_ip_addr);
+
+    let reqUrl = req.get_url();
+
+    // https://developer.fastly.com/solutions/examples/manipulate-query-string/
+    let qs = reqUrl.query().unwrap_or_else(|| "").to_string();
+
+    let req_method = req.get_method_str();
 
 
     let mut resp_data = serde_json::json!({
+        "args": &qs,
+        "headers": &reqHeadersData,
         "ip": &client_ip_addr,
-        "method": "somemethod",
-        "args": {},
-        "headers": reqHeadersData,
-        "url": "",
+        "method": &req_method,
+        "url": &reqUrl.as_str(),
     });
-    println!("{:?}",&resp_data);
+
     let mut resp = Response::new();
     resp.set_status(StatusCode::OK);
     resp.set_body_json(&resp_data);
     Ok(resp)
+}
+
+fn status(mut req: Request) -> Result<Response, Error> {
+    // let reqUrlAbs = Url::parse(req.get_url_str())?;
+    let reqUrl = req.get_url();
+    println!("{:?}", reqUrl);
+    // println!("{:?}", reqUrl.path_segments());
+    // let mut path_segments = reqUrl.path_segments().ok_or_else(|| "cannot be base")?;
+    println!();
+    let mut path_segments: Vec<&str> = reqUrl.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
+
+    let status_str = path_segments[1];
+    let statusResult = status_str.parse::<u16>();
+    println!("{:?}", statusResult);
+
+    let mut resp = Response::new();
+    match statusResult {
+        Ok(statusInt) => {
+            // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
+            resp.set_status(statusInt);
+            return Ok(resp);
+        }
+        Err(_) => {
+            resp.set_status(500);
+            let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
+            resp.set_body_json(&data);
+            return Ok(resp);
+        }
+    }
 }
 
 #[test]
