@@ -17,19 +17,15 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     // set the host header needed for glitch.
     req.set_header("host", "http-me.glitch.me");
 
-    match req.get_path() {
-        s if s.starts_with("/status") => {
-            Ok(status(req)?)
-        }
-        s if s.starts_with("/anything") => {
-            Ok(anything(req)?)
-        }
+    return match req.get_path() {
+        s if s.starts_with("/status") => Ok(status(req)?),
+        s if s.starts_with("/anything") => Ok(anything(req)?),
         // Forward the request to a backend.
         _ => {
             let beresp = req.send(BACKEND_HTTPME)?;
             Ok(beresp)
         }
-    }
+    };
 }
 
 fn anything(mut req: Request) -> Result<Response, Error> {
@@ -69,31 +65,41 @@ fn anything(mut req: Request) -> Result<Response, Error> {
 fn status(req: Request) -> Result<Response, Error> {
     // let reqUrlAbs = Url::parse(req.get_url_str())?;
     let reqUrl = req.get_url();
-    println!("{:?}", reqUrl);
-    // println!("{:?}", reqUrl.path_segments());
-    // let mut path_segments = reqUrl.path_segments().ok_or_else(|| "cannot be base")?;
-    println!();
     let path_segments: Vec<&str> = reqUrl.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
 
-    let status_str = path_segments[1];
-    let statusResult = status_str.parse::<u16>();
-    println!("{:?}", statusResult);
+    // If the path segment is too short, then just return a 500
+    if path_segments.len() < 2 {
+        let mut resp = Response::new();
+        resp.set_status(500);
+        let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
+        resp.set_body_json(&data);
+        return Ok(resp);
+    }
 
-    let mut resp = Response::new();
-    match statusResult {
-        Ok(statusInt) => {
-            // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
-            resp.set_status(statusInt);
-            return Ok(resp);
-        }
-        Err(_) => {
-            resp.set_status(500);
-            let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
-            resp.set_body_json(&data);
-            return Ok(resp);
+    let status_str = path_segments[1];
+    let statusParsed = status_str.parse::<u16>()?;
+
+    return statusResult(statusParsed);
+
+    fn statusResult(statusU16: u16) -> Result<Response, Error> {
+        let mut resp = Response::new();
+        return match statusU16 {
+            statusInt => {
+                // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
+                resp.set_status(statusInt);
+                Ok(resp)
+            },
+            _ => {
+                resp.set_status(500);
+                let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
+                resp.set_body_json(&data);
+                Ok(resp)
+            }
         }
     }
 }
+
+
 
 #[test]
 fn test_homepage() {
