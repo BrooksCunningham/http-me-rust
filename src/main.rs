@@ -17,18 +17,28 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     // set the host header needed for glitch.
     req.set_header("host", "http-me.glitch.me");
 
-    return match req.get_path() {
-        s if s.starts_with("/status") => Ok(status(req)?),
-        s if s.starts_with("/anything") => Ok(anything(req)?),
-        // Forward the request to a backend.
-        _ => {
-            let beresp = req.send(BACKEND_HTTPME)?;
-            Ok(beresp)
-        }
+    // create a new response object that may be modified
+    let mut resp = Response::new();
+
+    resp = match req.get_header_str("endpoint") {
+        Some(ep) if ep.contains("status") => status(&req, resp)?,
+        _ => resp,
     };
+
+    match req.get_path() {
+        s if s.starts_with("/status") => return Ok(status(&req, resp)?),
+        s if s.starts_with("/anything") => return Ok(anything(req, resp)?),
+        // Forward the request to a backend.
+        _ => (),
+        // {
+        //     let beresp = req.send(BACKEND_HTTPME)?;
+        //     Ok(beresp)
+        // }
+    };
+    return Ok::<fastly::Response, Error>(resp)
 }
 
-fn anything(mut req: Request) -> Result<Response, Error> {
+fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     let mut reqHeadersData = serde_json::json!({});
     for (n, v) in req.get_headers() {
         let reqHeaderNameStr = n.as_str();
@@ -56,33 +66,42 @@ fn anything(mut req: Request) -> Result<Response, Error> {
         "url": &reqUrl.as_str(),
     });
 
-    let mut resp = Response::new();
-    resp.set_status(StatusCode::OK);
+    // resp.set_status(StatusCode::OK);
     resp.set_body_json(&resp_data);
     Ok(resp)
 }
 
-fn status(req: Request) -> Result<Response, Error> {
+fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
     // let reqUrlAbs = Url::parse(req.get_url_str())?;
+    let mut status_str = "";
+    let mut statusParsed = 200;
+
+    match req.get_header_str("endpoint") {
+        Some(ep) if ep.contains("status") => {
+            status_str = ep.split("=").collect::<Vec<&str>>()[1];
+            statusParsed = status_str.parse::<u16>()?;
+            return statusResult(statusParsed, resp);
+        },
+        _ => ()
+    }
+
     let reqUrl = req.get_url();
     let path_segments: Vec<&str> = reqUrl.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
 
     // If the path segment is too short, then just return a 500
     if path_segments.len() < 2 {
-        let mut resp = Response::new();
         resp.set_status(500);
         let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
         resp.set_body_json(&data);
         return Ok(resp);
     }
 
-    let status_str = path_segments[1];
-    let statusParsed = status_str.parse::<u16>()?;
+    status_str = path_segments[1];
+    statusParsed = status_str.parse::<u16>()?;
 
-    return statusResult(statusParsed);
+    return statusResult(statusParsed, resp);
 
-    fn statusResult(statusU16: u16) -> Result<Response, Error> {
-        let mut resp = Response::new();
+    fn statusResult(statusU16: u16, mut resp: Response) -> Result<Response, Error> {
         return match statusU16 {
             statusInt => {
                 // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
