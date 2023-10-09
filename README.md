@@ -8,6 +8,28 @@ Check out the Github Actions. The Github Actions are defined in the folder `.git
 
 Use curl to send requests to https://http-me.edgecompute.app
 
+# customize the landing page with Swagger UI using Fastly KV Store
+
+## creates the kv store
+`fastly kv-store create --name=assets_store`
+
+## get the kv store id that was just created
+`fastly kv-store list | grep assets_store -a1 | grep ID`
+
+## add everything in the directory for static assets in the store-id
+`fastly kv-store-entry create --dir ./static-assets/ --store-id=STORE-ID`
+
+## create a link between the kv store and the service
+`fastly resource-link create --version=latest --autoclone --resource-id=STORE-ID`
+
+## activate the latest version
+`fastly service-version activate --version=latest`
+
+https://developer.fastly.com/reference/cli/kv-store/
+https://developer.fastly.com/reference/cli/kv-store-entry/
+
+
+
 ## Return a specific status code
 `curl -i 'https://http-me.edgecompute.app/status/302'`
 

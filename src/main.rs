@@ -1,8 +1,7 @@
-use fastly::http::{StatusCode};
-use fastly::{Error, Request, Response};
+use fastly::http::StatusCode;
+use fastly::{Error, mime, KVStore, Request, Response};
 use fastly::handle::client_ip_addr;
 // use serde_json::{json, Value};
-use serde_json::json;
 
 const BACKEND_HTTPME: &str = "backend_httpme";
 
@@ -15,7 +14,7 @@ fn main() -> Result<(), Error> {
 
 fn handler(mut req: Request) -> Result<Response, Error> {
     // set the host header needed for glitch.
-    req.set_header("host", "http-me.glitch.me");
+    // req.set_header("host", "http-me.glitch.me");
 
     // create a new response object that may be modified
     let mut resp = Response::new();
@@ -28,12 +27,12 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     match req.get_path() {
         s if s.starts_with("/status") => return Ok(status(&req, resp)?),
         s if s.starts_with("/anything") => return Ok(anything(req, resp)?),
-        // Forward the request to a backend.
+        s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
+
+        "/" => return Ok(swagger_ui_html(resp)?),
+        
+        // Do nothing
         _ => (),
-        // {
-        //     let beresp = req.send(BACKEND_HTTPME)?;
-        //     Ok(beresp)
-        // }
     };
     return Ok::<fastly::Response, Error>(resp)
 }
@@ -48,10 +47,10 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     // fastly::handle::client_ip_addr
     let client_ip_addr = client_ip_addr().unwrap().to_string();
 
-    let reqUrl = req.get_url().to_owned();
+    let req_url = req.get_url().to_owned();
 
     // https://developer.fastly.com/solutions/examples/manipulate-query-string/
-    let qs = reqUrl.query().unwrap_or_else(|| "").to_string();
+    let qs = req_url.query().unwrap_or_else(|| "").to_string();
     let req_method = req.get_method_str().to_owned();
 
     let body = req.take_body_str();
@@ -63,7 +62,7 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
         "headers": &reqHeadersData,
         "ip": &client_ip_addr,
         "method": &req_method,
-        "url": &reqUrl.as_str(),
+        "url": &req_url.as_str(),
     });
 
     // resp.set_status(StatusCode::OK);
@@ -80,13 +79,13 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
         Some(ep) if ep.contains("status") => {
             status_str = ep.split("=").collect::<Vec<&str>>()[1];
             statusParsed = status_str.parse::<u16>()?;
-            return statusResult(statusParsed, resp);
+            return status_result(statusParsed, resp);
         },
         _ => ()
     }
 
-    let reqUrl = req.get_url();
-    let path_segments: Vec<&str> = reqUrl.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
+    let req_url = req.get_url();
+    let path_segments: Vec<&str> = req_url.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
 
     // If the path segment is too short, then just return a 500
     if path_segments.len() < 2 {
@@ -99,13 +98,13 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
     status_str = path_segments[1];
     statusParsed = status_str.parse::<u16>()?;
 
-    return statusResult(statusParsed, resp);
+    return status_result(statusParsed, resp);
 
-    fn statusResult(statusU16: u16, mut resp: Response) -> Result<Response, Error> {
-        return match statusU16 {
-            statusInt => {
+    fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error> {
+        return match status_u16 {
+            status_int => {
                 // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
-                resp.set_status(statusInt);
+                resp.set_status(status_int);
                 Ok(resp)
             },
             _ => {
@@ -118,6 +117,52 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
     }
 }
 
+fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
+    // Define a KV store instance using the resource link name
+  let store = KVStore::open("assets_store")?.unwrap();
+
+  // Get the value back from the KV store (as a string),
+  let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
+
+  resp.set_body_text_html(&swagger_html);
+  return Ok(resp)
+}
+
+fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error> {
+
+    let req_url = req.get_url();
+    let path_segments: Vec<&str> = req_url.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
+
+    let req_filename = path_segments.last().cloned().unwrap_or("Not Found");
+    println!("{:?}", &req_filename);
+
+    // Define a KV store instance using the resource link name
+    let store = KVStore::open("assets_store")?.unwrap();
+
+    // Get the value back from the KV store (as a string),
+    let req_filename_lookup = format!("static-assets/{}", &req_filename);
+    println!("req_filename_lookup: {}", &req_filename_lookup);
+    let static_asset: String = store.lookup_str(&req_filename_lookup)?.unwrap_or("Not Found".to_string());
+
+    // using the set_body_text_plain since that accepts a &str value.
+    resp.set_body_text_plain(&static_asset);
+    
+    let filename_parts = req_filename.split(".").collect::<Vec<&str>>();
+    // let collection: Vec<&str> = filename_parts.collect::<Vec<&str>>();
+    let filename_ext = filename_parts.last().cloned().unwrap_or("html");
+
+    println!("{}", &filename_ext);
+
+    match filename_ext {
+        "js" => resp.set_header("content-type", "application/javascript; charset=utf-8"),
+        "css" => resp.set_header("content-type", "text/css; charset=utf-8"),
+        "html" => resp.set_header("content-type", "text/html; charset=utf-8"),
+        "json" => resp.set_header("content-type", "application/json; charset=utf-8"),
+        _ => resp.set_body_text_plain(&static_asset),
+    };
+
+    return Ok(resp)
+}
 
 
 #[test]
