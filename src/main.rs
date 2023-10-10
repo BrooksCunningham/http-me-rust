@@ -3,7 +3,7 @@ use fastly::{Error, mime, KVStore, Request, Response};
 use fastly::handle::client_ip_addr;
 // use serde_json::{json, Value};
 
-const BACKEND_HTTPME: &str = "backend_httpme";
+// const BACKEND_HTTPME: &str = "backend_httpme";
 
 fn main() -> Result<(), Error> {
     let ds_req = Request::from_client();
@@ -13,9 +13,6 @@ fn main() -> Result<(), Error> {
 }
 
 fn handler(mut req: Request) -> Result<Response, Error> {
-    // set the host header needed for glitch.
-    // req.set_header("host", "http-me.glitch.me");
-
     // create a new response object that may be modified
     let mut resp = Response::new();
 
@@ -40,9 +37,9 @@ fn handler(mut req: Request) -> Result<Response, Error> {
 fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     let mut reqHeadersData = serde_json::json!({});
     for (n, v) in req.get_headers() {
-        let reqHeaderNameStr = n.as_str();
-        let reqHeaderValStr = v.to_str()?;
-        reqHeadersData[reqHeaderNameStr] = serde_json::json!(reqHeaderValStr);
+        let req_header_name_str = n.as_str();
+        let req_header_val_str = v.to_str()?;
+        reqHeadersData[req_header_name_str] = serde_json::json!(req_header_val_str);
     }
     // fastly::handle::client_ip_addr
     let client_ip_addr = client_ip_addr().unwrap().to_string();
@@ -134,24 +131,19 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     let path_segments: Vec<&str> = req_url.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
 
     let req_filename = path_segments.last().cloned().unwrap_or("Not Found");
-    println!("{:?}", &req_filename);
 
     // Define a KV store instance using the resource link name
     let store = KVStore::open("assets_store")?.unwrap();
 
     // Get the value back from the KV store (as a string),
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
-    println!("req_filename_lookup: {}", &req_filename_lookup);
     let static_asset: String = store.lookup_str(&req_filename_lookup)?.unwrap_or("Not Found".to_string());
 
     // using the set_body_text_plain since that accepts a &str value.
     resp.set_body_text_plain(&static_asset);
     
     let filename_parts = req_filename.split(".").collect::<Vec<&str>>();
-    // let collection: Vec<&str> = filename_parts.collect::<Vec<&str>>();
     let filename_ext = filename_parts.last().cloned().unwrap_or("html");
-
-    println!("{}", &filename_ext);
 
     match filename_ext {
         "js" => resp.set_header("content-type", "application/javascript; charset=utf-8"),
