@@ -29,6 +29,7 @@ https://developer.fastly.com/reference/cli/kv-store/
 https://developer.fastly.com/reference/cli/kv-store-entry/
 
 
+# How to send requests through the CLI
 
 ## Return a specific status code
 `curl -i 'https://http-me.edgecompute.app/status/302'`
