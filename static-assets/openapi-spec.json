@@ -49,7 +49,10 @@
           "200": {
             "description": ""
           }
-        }
+        },
+        "tags": [
+          "Base path"
+        ]
       }
     },
     "/status/{codes}": {
