@@ -51,6 +51,7 @@ jobs:
         ps
         
   deploy:
+    needs: run-waf-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
