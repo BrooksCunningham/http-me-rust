@@ -47,6 +47,8 @@ jobs:
     - name: Give time for log to upload
       run: |
         sleep 30
+        sleep 30
+        sleep 30
     - name: stop ngwaf
       run: |
         killall sigsci-agent
