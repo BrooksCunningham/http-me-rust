@@ -36,6 +36,7 @@ jobs:
        SIGSCI_ACCESSKEYID: ${{ secrets.ACCESSKEYID }}
        SIGSCI_SECRETACCESSKEY: ${{ secrets.SECRETACCESSKEY }}
        SIGSCI_REVPROXY_LISTENER: "app1:{listener=http://0.0.0.0:8888,upstreams=http://0.0.0.0:7676/,pass-host-header=false}"
+       SIGSCI_UPLOAD_INTERVAL: "10s"
       #  "app1:{listener=http://0.0.0.0:8888,upstreams=https://http-me.edgecompute.app:443/,pass-host-header=false}"
       run: |
         /usr/sbin/sigsci-agent &
@@ -46,9 +47,10 @@ jobs:
         curl -si -X GET "http://0.0.0.0:8888/anything/from-gh-action-ngwaf-and-compute?ghaction=../../../etc/passwd"
     - name: Give time for log to upload
       run: |
-        sleep 180
+        sleep 150
     - name: stop ngwaf
       run: |
+        ps
         killall sigsci-agent
         ps
         
