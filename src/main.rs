@@ -1,17 +1,39 @@
+#[allow(unused_imports)]
 use fastly::http::StatusCode;
+#[allow(unused_imports)]
 use fastly::{Error, mime, KVStore, Request, Response};
 use fastly::handle::client_ip_addr;
-// use serde_json::{json, Value};
-
-// const BACKEND_HTTPME: &str = "backend_httpme";
+// use std::{thread, time};
+use std::thread::sleep;
+use std::io::Write;
+use std::time::Duration;
 
 fn main() -> Result<(), Error> {
-    let ds_req = Request::from_client();
-    let us_resp = handler(ds_req)?;
-    us_resp.send_to_client();
+    let client_req = Request::from_client();
+    let mut server_resp = handler(client_req)?;
+
+    match server_resp.get_header_str("action-tarpit") {
+        Some(ep) if ep.contains("1") => {
+
+            let body = server_resp.take_body();
+            let mut streamer = server_resp.stream_to_client();
+            // The following code will force the client to wait for 1 second
+            // before emitting each 100 bytes of the response.
+            for chunk in body.into_bytes().as_slice().chunks(100) {
+                let _ = streamer.write(chunk)?;
+                streamer.flush()?;
+                sleep(Duration::from_millis(1000));
+            };
+            return Ok(())
+        },
+        _ => (),
+    };
+
+    server_resp.send_to_client();
     Ok(())
 }
 
+#[allow(unused_mut)]
 fn handler(mut req: Request) -> Result<Response, Error> {
     // create a new response object that may be modified
     let mut resp = Response::new();
@@ -19,6 +41,18 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     resp = match req.get_header_str("endpoint") {
         Some(ep) if ep.contains("status") => status(&req, resp)?,
         _ => resp,
+    };
+
+    // tarpit implementation
+    // https://github.com/BrooksCunningham/Fastly-Training-Demos/blob/d35589eb6652c9f8df29e407d4a6177f11c5ff7a/TarPit/src/main.rs#L27
+
+    // TODOs
+    // Add do tarpitting in the response header in the handler function if tarpitting should occur. Get that header and tarpit based on some information in the main function.
+    match req.get_header_str("endpoint") {
+        Some(ep) if ep.contains("tarpit") => {
+            resp.set_header("action-tarpit", "1")
+        },
+        _ => (),
     };
 
     match req.get_path() {
