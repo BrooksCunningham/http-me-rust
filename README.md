@@ -1,3 +1,5 @@
+[![Test, build, and deploy](https://github.com/BrooksCunningham/http-me-rust/actions/workflows/test_build_deploy.yaml/badge.svg)](https://github.com/BrooksCunningham/http-me-rust/actions/workflows/test_build_deploy.yaml)
+
 # Demo for DevSecOps
 
 Using rust to demo DevSecOps. 
