@@ -59,6 +59,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/status") => return Ok(status(&req, resp)?),
         s if s.starts_with("/anything") => return Ok(anything(req, resp)?),
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
+        s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
         
@@ -96,13 +97,11 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
         "url": &req_url.as_str(),
     });
 
-    // resp.set_status(StatusCode::OK);
     resp.set_body_json(&resp_data);
     Ok(resp)
 }
 
 fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
-    // let reqUrlAbs = Url::parse(req.get_url_str())?;
     let mut status_str = "";
     let mut statusParsed = 200;
 
