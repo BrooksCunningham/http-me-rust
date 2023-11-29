@@ -86,7 +86,6 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     let req_method = req.get_method_str().to_owned();
 
     let body = req.take_body_str();
-    println!("{}", &body);
 
     let resp_data = serde_json::json!({
         "args": &qs,
