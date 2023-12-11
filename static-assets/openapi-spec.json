@@ -4,7 +4,8 @@
     "title": "http-me.edgecompute.app",
     "description": "Have fun with HTTP",
     "version": "1.0.0",
-    "contact": {}
+    "contact": {
+    }
   },
   "servers": [
     {
@@ -35,16 +36,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {}
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": ""
@@ -60,11 +51,12 @@
         "parameters": [
           {
             "in": "path",
-            "name": "codes"
+            "name": "codes",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           }
-        ],
-        "produces": [
-          "text/plain"
         ],
         "responses": {
           "100": {
@@ -92,11 +84,12 @@
         "parameters": [
           {
             "in": "path",
-            "name": "codes"
+            "name": "codes",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           }
-        ],
-        "produces": [
-          "text/plain"
         ],
         "responses": {
           "100": {
@@ -124,11 +117,12 @@
         "parameters": [
           {
             "in": "path",
-            "name": "codes"
+            "name": "codes",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           }
-        ],
-        "produces": [
-          "text/plain"
         ],
         "responses": {
           "100": {
@@ -156,11 +150,12 @@
         "parameters": [
           {
             "in": "path",
-            "name": "codes"
+            "name": "codes",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           }
-        ],
-        "produces": [
-          "text/plain"
         ],
         "responses": {
           "100": {
@@ -188,11 +183,12 @@
         "parameters": [
           {
             "in": "path",
-            "name": "codes"
+            "name": "codes",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           }
-        ],
-        "produces": [
-          "text/plain"
         ],
         "responses": {
           "100": {
@@ -220,11 +216,12 @@
         "parameters": [
           {
             "in": "path",
-            "name": "codes"
+            "name": "codes",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
           }
-        ],
-        "produces": [
-          "text/plain"
         ],
         "responses": {
           "100": {
@@ -251,8 +248,15 @@
     },
     "/anything/{anything}": {
       "delete": {
-        "produces": [
-          "application/json"
+        "parameters": [
+          {
+            "in": "path",
+            "name": "anything",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
         ],
         "responses": {
           "200": {
@@ -265,8 +269,15 @@
         ]
       },
       "get": {
-        "produces": [
-          "application/json"
+        "parameters": [
+          {
+            "in": "path",
+            "name": "anything",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
         ],
         "responses": {
           "200": {
@@ -279,19 +290,27 @@
         ]
       },
       "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "anything",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {}
+                "properties": {
+                }
               }
             }
           }
         },
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "Anything passed in request"
@@ -303,19 +322,27 @@
         ]
       },
       "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "anything",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {}
+                "properties": {
+                }
               }
             }
           }
         },
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "Anything passed in request"
@@ -327,8 +354,15 @@
         ]
       },
       "put": {
-        "produces": [
-          "application/json"
+        "parameters": [
+          {
+            "in": "path",
+            "name": "anything",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
         ],
         "responses": {
           "200": {
@@ -341,8 +375,15 @@
         ]
       },
       "trace": {
-        "produces": [
-          "application/json"
+        "parameters": [
+          {
+            "in": "path",
+            "name": "anything",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
         ],
         "responses": {
           "200": {
@@ -356,5 +397,7 @@
       }
     }
   },
-  "tags": []
+  "tags": [
+
+  ]
 }
