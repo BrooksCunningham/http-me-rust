@@ -1,22 +1,16 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "http-me.edgecompute.app",
+    "title": "http-me",
     "description": "Have fun with HTTP",
     "version": "1.0.0",
-    "contact": {
-    }
+    "contact": {}
   },
-  "servers": [
-    {
-      "url": "https://http-me.edgecompute.app"
-    }
-  ],
   "paths": {
     "/": {
       "get": {
-        "summary": "https://http-me.edgecompute.app/",
-        "description": "https://http-me.edgecompute.app/",
+        "summary": "Base path",
+        "description": "Base path",
         "operationId": "httpsHttpMeEdgecomputeApp",
         "parameters": [
           {
@@ -305,8 +299,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                }
+                "properties": {}
               }
             }
           }
@@ -337,8 +330,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                }
+                "properties": {}
               }
             }
           }
@@ -397,7 +389,5 @@
       }
     }
   },
-  "tags": [
-
-  ]
+  "tags": []
 }

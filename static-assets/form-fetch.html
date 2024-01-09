@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submission</title>
+</head>
+
+<body>
+    <form id="myForm">
+        <!-- Form fields like name, telephone, email, etc. -->
+        <p><label>Customer name: <input name="custname" id="custname"></label></p>
+        <p><label>Telephone: <input type=tel name="custtel" id="custtel"></label></p>
+        <p><label>E-mail address: <input type=email name="custemail" id="custemail"></label></p>
+        <p><label>Fetch URL <input type=email name="fetch_url" id="fetch_url"></label></p>
+        <!-- Add other form fields here -->
+        <button type="button" onclick="submitForm()">Submit Order</button>
+    </form>
+    <div id="response"></div>
+
+    <script>
+        function submitForm() {
+            // Gather form data as shown in previous example
+            const formData = {
+                name: document.getElementById('custname').value,
+                telephone: document.getElementById('custtel').value,
+                email: document.getElementById('custemail').value,
+                fetch_url: document.getElementById('fetch_url').value,
+            };
+
+            // Send POST request
+            fetch(`/anything/post/${formData.fetch_url}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('response').innerText = JSON.stringify(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+
+</html>
