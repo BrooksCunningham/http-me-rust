@@ -48,11 +48,6 @@ jobs:
     - name: Give time for log to upload
       run: |
         sleep 120
-    # - name: stop ngwaf
-    #   run: |
-    #     ps
-    #     killall sigsci-agent
-    #     ps
         
   deploy:
     needs: run-waf-tests
@@ -73,6 +68,9 @@ jobs:
       with:
         service_id:  ${{ secrets.FASTLY_SERVICE_ID }} # optional, defaults to value in fastly.toml
         comment: 'Deployed via GitHub Actions' # optional
-        
-    
-    
+    - name: Update KV Store
+      env:
+        FASTLY_API_TOKEN: ${{ secrets.FASTLY_API_TOKEN }}
+        FASTLY_KV_STORE: ${{ secrets.FASTLY_KV_STORE }}
+      run: |
+        fastly kv-store-entry create --dir ./static-assets/ --store-id=$FASTLY_KV_STORE
