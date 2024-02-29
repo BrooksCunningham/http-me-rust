@@ -50,3 +50,4 @@ https://developer.fastly.com/reference/cli/kv-store-entry/
 ## Security issues
 
 Please see [SECURITY.md](SECURITY.md) for guidance on reporting security-related issues.
+
