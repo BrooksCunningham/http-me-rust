@@ -3,6 +3,7 @@ use fastly::http::StatusCode;
 #[allow(unused_imports)]
 use fastly::{Error, mime, KVStore, Request, Response};
 use fastly::handle::client_ip_addr;
+use serde_json::Value;
 // use std::{thread, time};
 use std::thread::sleep;
 use std::io::Write;
@@ -70,14 +71,14 @@ fn handler(mut req: Request) -> Result<Response, Error> {
 }
 
 fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
-    let mut reqHeadersData = serde_json::json!({});
+    let mut req_headers_data: Value = serde_json::json!({});
     for (n, v) in req.get_headers() {
         let req_header_name_str = n.as_str();
         let req_header_val_str = v.to_str()?;
-        reqHeadersData[req_header_name_str] = serde_json::json!(req_header_val_str);
+        req_headers_data[req_header_name_str] = serde_json::json!(req_header_val_str);
     }
     // fastly::handle::client_ip_addr
-    let client_ip_addr = client_ip_addr().unwrap().to_string();
+    let client_ip_addr: String = client_ip_addr().unwrap().to_string();
 
     let req_url = req.get_url().to_owned();
 
@@ -90,13 +91,13 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     let resp_data = serde_json::json!({
         "args": &qs,
         "body": &body,
-        "headers": &reqHeadersData,
+        "headers": &req_headers_data,
         "ip": &client_ip_addr,
         "method": &req_method,
         "url": &req_url.as_str(),
     });
 
-    resp.set_body_json(&resp_data);
+    let _ = resp.set_body_json(&resp_data);
     Ok(resp)
 }
 
@@ -139,7 +140,7 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
             _ => {
                 resp.set_status(500);
                 let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
-                resp.set_body_json(&data);
+                let _ = resp.set_body_json(&data);
                 Ok(resp)
             }
         }
@@ -148,7 +149,7 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
 
 fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
     // Define a KV store instance using the resource link name
-  let store = KVStore::open("assets_store")?.unwrap();
+  let store: KVStore = KVStore::open("assets_store")?.unwrap();
 
   // Get the value back from the KV store (as a string),
   let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
@@ -191,8 +192,8 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 
 #[test]
 fn test_homepage() {
-    let req = fastly::Request::get("http://http-me.edgecompute.app.com/");
-    let resp = handler(req).expect("request succeeds");
+    let req: Request = fastly::Request::get("http://http-me.edgecompute.app.com/");
+    let resp: Response = handler(req).expect("request succeeds");
     assert_eq!(resp.get_status(), StatusCode::OK);
     assert_eq!(resp.get_content_type(), Some(mime::TEXT_HTML_UTF_8));
     assert!(resp.into_body_str().contains("Welcome to Compute@Edge"));
