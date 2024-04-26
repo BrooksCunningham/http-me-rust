@@ -86,7 +86,9 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     let qs = req_url.query().unwrap_or_else(|| "").to_string();
     let req_method = req.get_method_str().to_owned();
 
-    let body = req.take_body_str();
+    // let body = req.take_body_str();
+    let buffer = req.take_body_bytes();
+    let body = String::from_utf8_lossy(&buffer);
 
     let resp_data = serde_json::json!({
         "args": &qs,
