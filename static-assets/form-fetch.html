@@ -5,23 +5,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7e7e7;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 400px;
+            word-wrap: break-word;
+        }
+    </style>
 </head>
 
 <body>
     <form id="myForm">
-        <!-- Form fields like name, telephone, email, etc. -->
         <p><label>Customer name: <input name="custname" id="custname"></label></p>
-        <p><label>Telephone: <input type=tel name="custtel" id="custtel"></label></p>
-        <p><label>E-mail address: <input type=email name="custemail" id="custemail"></label></p>
-        <p><label>Fetch URL <input type=email name="fetch_url" id="fetch_url"></label></p>
-        <!-- Add other form fields here -->
+        <p><label>Telephone: <input type="tel" name="custtel" id="custtel"></label></p>
+        <p><label>E-mail address: <input type="email" name="custemail" id="custemail"></label></p>
+        <p><label>Fetch URL: <input type="text" name="fetch_url" id="fetch_url"></label></p>
         <button type="button" onclick="submitForm()">Submit Order</button>
     </form>
     <div id="response"></div>
 
     <script>
         function submitForm() {
-            // Gather form data as shown in previous example
             const formData = {
                 name: document.getElementById('custname').value,
                 telephone: document.getElementById('custtel').value,
@@ -29,7 +79,6 @@
                 fetch_url: document.getElementById('fetch_url').value,
             };
 
-            // Send POST request
             fetch(`/anything/post/${formData.fetch_url}`, {
                 method: 'POST',
                 headers: {
