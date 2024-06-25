@@ -21,7 +21,8 @@ addEventListener("securitypolicyviolation", (event) => {
     fetch('/csp-violations-reporting-endpoint', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'csp-violation': JSON.stringify(violationData)
         },
         body: JSON.stringify(violationData)
     }).then(response => {
