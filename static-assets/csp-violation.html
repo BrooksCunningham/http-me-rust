@@ -6,6 +6,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Example CSP violation</title>
+    <script>document.addEventListener("securitypolicyviolation", function(e) {
+        alert("security policy violation!");
+    });
+    </script>
     <script src="https://example.com/script.js" defer=""><!-- CSP violation --></script>
     <ul>
         <li><a href="/">Go Back</a> </li>
