@@ -105,13 +105,13 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
 
 fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
     let mut status_str = "";
-    let mut statusParsed = 200;
+    let mut status_parsed = 200;
 
     match req.get_header_str("endpoint") {
         Some(ep) if ep.contains("status") => {
             status_str = ep.split("=").collect::<Vec<&str>>()[1];
-            statusParsed = status_str.parse::<u16>()?;
-            return status_result(statusParsed, resp);
+            status_parsed = status_str.parse::<u16>()?;
+            return status_result(status_parsed, resp);
         },
         _ => ()
     }
@@ -128,9 +128,9 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
     }
 
     status_str = path_segments[1];
-    statusParsed = status_str.parse::<u16>()?;
+    status_parsed = status_str.parse::<u16>()?;
 
-    return status_result(statusParsed, resp);
+    return status_result(status_parsed, resp);
 
     fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error> {
         return match status_u16 {
