@@ -196,7 +196,8 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     // using the set_body_text_plain since that accepts a &str value.
     // Need to check the content-type before setting the type of body.
     // resp.set_body_text_plain(&static_asset);
-    resp.set_body(static_asset.as_bytes());
+    // https://docs.rs/fastly/latest/fastly/struct.Body.html
+    resp.set_body(static_asset.into_bytes());
 
     return Ok(resp);
 }
