@@ -179,7 +179,7 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
     let static_asset: Body = store
         .lookup(&req_filename_lookup)?
-        .unwrap_or(Body::new().write("Not Found".as_bytes()));
+        .unwrap_or(Body::new());
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
