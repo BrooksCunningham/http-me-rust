@@ -38,7 +38,7 @@ pub fn handle_fanout_ws(mut req: Request, chan: &str) -> Response {
 
     let req_body: Vec<u8> = req.take_body().into_bytes();
     println!("req_body for ws");
-    println!("{:?}", std::str::from_utf8(&req_body));
+    // println!("{:?}", std::str::from_utf8(&req_body));
     let mut resp_body: Vec<u8> = [].to_vec();
 
     let mut resp = Response::from_status(StatusCode::OK)

@@ -208,7 +208,6 @@ fn chatroom(mut req: Request, mut resp: Response) -> Result<Response, Error> {
         "/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
         _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
     };
-    println!("{:?}",resp);
     return Ok(resp)
 }
 
