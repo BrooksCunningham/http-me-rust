@@ -185,6 +185,8 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
         "css" => resp.set_header("content-type", "text/css; charset=utf-8"),
         "html" => resp.set_header("content-type", "text/html; charset=utf-8"),
         "json" => resp.set_header("content-type", "application/json; charset=utf-8"),
+        "jpg" => resp.set_header("content-type", "image/jpg"),
+        "png" => resp.set_header("content-type", "image/png"),
         _ => resp.set_body_text_plain(&static_asset),
     };
 
