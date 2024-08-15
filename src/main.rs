@@ -1,6 +1,7 @@
 use fastly::handle::client_ip_addr;
 #[allow(unused_imports)]
 use fastly::http::StatusCode;
+use fastly::Body;
 #[allow(unused_imports)]
 use fastly::{mime, Error, KVStore, Request, Response};
 use serde_json::Value;
@@ -176,9 +177,9 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 
     // Get the value back from the KV store (as a string),
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
-    let static_asset: String = store
-        .lookup_str(&req_filename_lookup)?
-        .unwrap_or("Not Found".to_string());
+    let static_asset: Body = store
+        .lookup(&req_filename_lookup)?
+        .unwrap_or(Body::new().write("Not Found".as_bytes()));
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
@@ -190,14 +191,18 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
         "json" => resp.set_header("content-type", "application/json; charset=utf-8"),
         "jpg" => resp.set_header("content-type", "image/jpg"),
         "png" => resp.set_header("content-type", "image/png"),
-        _ => resp.set_body_text_plain(&static_asset),
+        _ => resp.set_header("content-type", "text/plain"),
     };
 
     // using the set_body_text_plain since that accepts a &str value.
     // Need to check the content-type before setting the type of body.
     // resp.set_body_text_plain(&static_asset);
     // https://docs.rs/fastly/latest/fastly/struct.Body.html
-    resp.set_body(static_asset.into_bytes());
+    // let body: Body = static_asset.into_bytes();
+    // let body = String::from_utf8_lossy(&buffer);
+    // resp.set_body(static_asset.into_bytes());
+    resp.set_body(static_asset);
+    // resp.set_body(body);
 
     return Ok(resp);
 }
