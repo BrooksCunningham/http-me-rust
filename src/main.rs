@@ -208,11 +208,11 @@ fn chatroom(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     let resp = match req.get_url().path() {
         // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
         "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
-        "/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
-        "/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
-        "/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
-        "/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
-        "/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
+        "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
+        "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
+        "/chatroom/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
+        "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
+        "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
         _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
     };
     return Ok(resp)
