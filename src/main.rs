@@ -1,12 +1,13 @@
+use fastly::handle::client_ip_addr;
 #[allow(unused_imports)]
 use fastly::http::StatusCode;
+use fastly::Body;
 #[allow(unused_imports)]
-use fastly::{Error, mime, KVStore, Request, Response};
-use fastly::handle::client_ip_addr;
+use fastly::{mime, Error, KVStore, Request, Response};
 use serde_json::Value;
 // use std::{thread, time};
-use std::thread::sleep;
 use std::io::Write;
+use std::thread::sleep;
 use std::time::Duration;
 
 mod fanout_util;
@@ -17,7 +18,6 @@ fn main() -> Result<(), Error> {
 
     match server_resp.get_header_str("action-tarpit") {
         Some(ep) if ep.contains("1") => {
-
             let body = server_resp.take_body();
             let mut streamer = server_resp.stream_to_client();
             // The following code will force the client to wait for 1 second
@@ -26,9 +26,9 @@ fn main() -> Result<(), Error> {
                 let _ = streamer.write(chunk)?;
                 streamer.flush()?;
                 sleep(Duration::from_millis(1000));
-            };
-            return Ok(())
-        },
+            }
+            return Ok(());
+        }
         _ => (),
     };
 
@@ -52,9 +52,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     // TODOs
     // Add do tarpitting in the response header in the handler function if tarpitting should occur. Get that header and tarpit based on some information in the main function.
     match req.get_header_str("endpoint") {
-        Some(ep) if ep.contains("tarpit") => {
-            resp.set_header("action-tarpit", "1")
-        },
+        Some(ep) if ep.contains("tarpit") => resp.set_header("action-tarpit", "1"),
         _ => (),
     };
 
@@ -66,11 +64,11 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/chatroom") => return Ok(chatroom(req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
-        
+
         // Do nothing
         _ => (),
     };
-    return Ok::<fastly::Response, Error>(resp)
+    return Ok::<fastly::Response, Error>(resp);
 }
 
 fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
@@ -116,11 +114,15 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
             status_parsed = status_str.parse::<u16>()?;
             return status_result(status_parsed, resp);
         },
-        _ => ()
+        _ => (),
     }
 
     let req_url = req.get_url();
-    let path_segments: Vec<&str> = req_url.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
+    let path_segments: Vec<&str> = req_url
+        .path_segments()
+        .ok_or_else(|| "cannot be base")
+        .unwrap()
+        .collect();
 
     // If the path segment is too short, then just return a 500
     if path_segments.len() < 2 {
@@ -141,32 +143,35 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
                 // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
                 resp.set_status(status_int);
                 Ok(resp)
-            },
+            }
             _ => {
                 resp.set_status(500);
                 let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
                 let _ = resp.set_body_json(&data);
                 Ok(resp)
             }
-        }
+        };
     }
 }
 
 fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
     // Define a KV store instance using the resource link name
-  let store: KVStore = KVStore::open("assets_store")?.unwrap();
+    let store: KVStore = KVStore::open("assets_store")?.unwrap();
 
-  // Get the value back from the KV store (as a string),
-  let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
+    // Get the value back from the KV store (as a string),
+    let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
 
-  resp.set_body_text_html(&swagger_html);
-  return Ok(resp)
+    resp.set_body_text_html(&swagger_html);
+    return Ok(resp);
 }
 
 fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error> {
-
     let req_url = req.get_url();
-    let path_segments: Vec<&str> = req_url.path_segments().ok_or_else(|| "cannot be base").unwrap().collect();
+    let path_segments: Vec<&str> = req_url
+        .path_segments()
+        .ok_or_else(|| "cannot be base")
+        .unwrap()
+        .collect();
 
     let req_filename = path_segments.last().cloned().unwrap_or("Not Found");
 
@@ -175,25 +180,35 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 
     // Get the value back from the KV store (as a string),
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
-    let static_asset: String = store.lookup_str(&req_filename_lookup)?.unwrap_or("Not Found".to_string());
+    let static_asset: Body = store
+        .lookup(&req_filename_lookup)?
+        .unwrap_or(Body::new());
 
-    // using the set_body_text_plain since that accepts a &str value.
-    resp.set_body_text_plain(&static_asset);
-    
-    let filename_parts = req_filename.split(".").collect::<Vec<&str>>();
-    let filename_ext = filename_parts.last().cloned().unwrap_or("html");
+    let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
+    let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
 
-    match filename_ext {
+    match static_filename_ext {
         "js" => resp.set_header("content-type", "application/javascript; charset=utf-8"),
         "css" => resp.set_header("content-type", "text/css; charset=utf-8"),
         "html" => resp.set_header("content-type", "text/html; charset=utf-8"),
         "json" => resp.set_header("content-type", "application/json; charset=utf-8"),
-        _ => resp.set_body_text_plain(&static_asset),
+        "jpg" => resp.set_header("content-type", "image/jpg"),
+        "png" => resp.set_header("content-type", "image/png"),
+        _ => resp.set_header("content-type", "text/plain"),
     };
 
-    return Ok(resp)
-}
+    // using the set_body_text_plain since that accepts a &str value.
+    // Need to check the content-type before setting the type of body.
+    // resp.set_body_text_plain(&static_asset);
+    // https://docs.rs/fastly/latest/fastly/struct.Body.html
+    // let body: Body = static_asset.into_bytes();
+    // let body = String::from_utf8_lossy(&buffer);
+    // resp.set_body(static_asset.into_bytes());
+    resp.set_body(static_asset);
+    // resp.set_body(body);
 
+    return Ok(resp);
+}
 
 fn chatroom(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     // resp.set_body_text_plain("chatroom response");
