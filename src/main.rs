@@ -10,6 +10,8 @@ use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
+mod fanout_util;
+
 fn main() -> Result<(), Error> {
     let client_req = Request::from_client();
     let mut server_resp = handler(client_req)?;
@@ -59,6 +61,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/anything") => return Ok(anything(req, resp)?),
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
+        s if s.starts_with("/chatroom") => return Ok(chatroom(req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
 
@@ -110,7 +113,7 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
             status_str = ep.split("=").collect::<Vec<&str>>()[1];
             status_parsed = status_str.parse::<u16>()?;
             return status_result(status_parsed, resp);
-        }
+        },
         _ => (),
     }
 
@@ -205,6 +208,22 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     // resp.set_body(body);
 
     return Ok(resp);
+}
+
+fn chatroom(mut req: Request, mut resp: Response) -> Result<Response, Error> {
+    // resp.set_body_text_plain("chatroom response");
+    let chan = "chatroomtest";
+    let resp = match req.get_url().path() {
+        // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
+        "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
+        "/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
+        "/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
+        "/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
+        "/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
+        "/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
+        _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
+    };
+    return Ok(resp)
 }
 
 #[test]
