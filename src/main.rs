@@ -126,6 +126,7 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
      // Repeat the request the specified number of times
      for _ in 0..repeat {
 
+        // Clone the previously built request
         let backend_req = backend_req_builder.clone_with_body();
  
         // Send the request to the backend
