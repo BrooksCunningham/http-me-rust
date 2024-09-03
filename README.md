@@ -47,6 +47,20 @@ https://developer.fastly.com/reference/cli/kv-store-entry/
 
 `curl -i 'https://http-me.edgecompute.app/any/path/myquery?foo=bar' -H 'endpoint:status=302'`
 
+# WORK IN PROGRESS - Not Yet working - Testing with websockets
+
+curl https://http-me.edgecompute.app/chatroom/test/websocket
+curl https://http-me.edgecompute.app/chatroom/test/stream
+curl https://http-me.edgecompute.app/chatroom/test/sse
+curl https://http-me.edgecompute.app/chatroom/test/long-poll
+
+For requests made to domains ending in `.edgecompute.app`, the app will handle requests to the following endpoints without forwarding to the origin:
+
+* `/chatroom/test/websocket`: bi-directional WebSocket
+* `/chatroom/test/stream`: HTTP streaming of `text/plain`
+* `/chatroom/test/sse`: SSE (streaming of `text/event-stream`)
+* `/chatroom/test/long-poll`: Long-polling
+
 ## Security issues
 
 Please see [SECURITY.md](SECURITY.md) for guidance on reporting security-related issues.

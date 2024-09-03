@@ -1,14 +1,18 @@
 use fastly::handle::client_ip_addr;
 #[allow(unused_imports)]
-use fastly::http::StatusCode;
+use fastly::http::{Method, HeaderValue, StatusCode};
 use fastly::Body;
 #[allow(unused_imports)]
-use fastly::{mime, Error, KVStore, Request, Response};
+use fastly::{Backend, mime, Error, KVStore, Request, Response};
 use serde_json::Value;
+use serde::{Deserialize};
+use core::fmt;
 // use std::{thread, time};
 use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
+use std::time::Instant;
+
 
 mod fanout_util;
 
@@ -62,6 +66,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/chatroom") => return Ok(chatroom(req, resp)?),
+        s if s.starts_with("/dynamic_backend") => return Ok(dynamic_backend(req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
 
@@ -69,6 +74,73 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         _ => (),
     };
     return Ok::<fastly::Response, Error>(resp);
+}
+
+// Define a struct to deserialize the incoming JSON body
+#[derive(Deserialize)]
+struct ClientDynamicBackendRequestBody {
+    backend: String,
+    target_url: Option<String>,
+    headers: Option<std::collections::HashMap<String, String>>,
+    repeat: Option<u64>,
+}
+
+fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error> {
+     // Start timing the request processing
+     let start = Instant::now();
+
+     // Parse the JSON body from the incoming request
+     let body: ClientDynamicBackendRequestBody = match req.take_body_json::<ClientDynamicBackendRequestBody>() {
+         Ok(b) => b,
+         Err(e) => { println!("{:?}", e);
+            return Ok(Response::from_status(400).with_body("Invalid JSON"))},
+     };
+ 
+     // Extract backend, headers, and repeat values from the parsed body
+     let target_host = body.backend;
+     let target_url = body.target_url.unwrap_or(format!("{}", &target_host));
+     let repeat = body.repeat.unwrap_or(1);
+     let headers = body.headers.unwrap_or_default();
+
+     // Dynamic backend builder
+     let target_backend = Backend::builder(&target_host, &target_host)
+     .override_host(&target_host)
+     .connect_timeout(Duration::from_secs(1))
+     .first_byte_timeout(Duration::from_secs(15))
+     .between_bytes_timeout(Duration::from_secs(10))
+     .enable_ssl()
+     .sni_hostname(&target_host)
+     .finish()?;
+ 
+     // Initialize a response object to store the final response
+     let mut final_response = Response::new();
+
+    // Create a new backend request
+    let mut backend_req_builder = Request::new(Method::GET, format!("https://{}", target_url));
+
+    // Add custom headers to the backend request
+    for (header_name, header_value) in &headers {
+        backend_req_builder.set_header(header_name, HeaderValue::from_str(header_value).unwrap());
+    }
+ 
+     // Repeat the request the specified number of times
+     for _ in 0..repeat {
+
+        let backend_req = backend_req_builder.clone_with_body();
+ 
+        // Send the request to the backend
+        let backend_resp = backend_req.send(&target_backend)?;
+
+        // Append the backend response to the final response
+        final_response.set_body(backend_resp.into_body());
+     }
+ 
+     // Calculate the elapsed time and set it as a response header
+     let duration = start.elapsed().as_millis();
+     final_response.set_header("response-timing", HeaderValue::from_str(&duration.to_string()).unwrap());
+ 
+     // Return the final response
+     Ok(final_response)
 }
 
 fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
@@ -202,13 +274,12 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     return Ok(resp);
 }
 
-fn chatroom(mut req: Request, mut resp: Response) -> Result<Response, Error> {
+fn chatroom(req: Request, _resp: Response) -> Result<Response, Error> {
     // resp.set_body_text_plain("chatroom response");
     let chan = "chatroomtest";
     let resp = match req.get_url().path() {
         // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
         "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
-        "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
         "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
         "/chatroom/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
         "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
