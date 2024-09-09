@@ -1,18 +1,18 @@
+use core::fmt;
 use fastly::handle::client_ip_addr;
 #[allow(unused_imports)]
-use fastly::http::{Method, HeaderValue, StatusCode};
+use fastly::http::{HeaderValue, Method, StatusCode};
 use fastly::Body;
 #[allow(unused_imports)]
-use fastly::{Backend, mime, Error, KVStore, Request, Response};
+use fastly::{mime, Backend, Error, KVStore, Request, Response};
+use serde::Deserialize;
+use serde_json::json;
 use serde_json::Value;
-use serde::{Deserialize};
-use core::fmt;
 // use std::{thread, time};
 use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
-
 
 mod fanout_util;
 
@@ -81,67 +81,77 @@ fn handler(mut req: Request) -> Result<Response, Error> {
 struct ClientDynamicBackendRequestBody {
     backend: String,
     target_url: Option<String>,
-    headers: Option<std::collections::HashMap<String, String>>,
+    headers: Option<Value>,
     repeat: Option<u64>,
 }
 
 fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error> {
-     // Start timing the request processing
-     let start = Instant::now();
+    // Start timing the request processing
+    let start = Instant::now();
 
-     // Parse the JSON body from the incoming request
-     let body: ClientDynamicBackendRequestBody = match req.take_body_json::<ClientDynamicBackendRequestBody>() {
-         Ok(b) => b,
-         Err(e) => { println!("{:?}", e);
-            return Ok(Response::from_status(400).with_body("Invalid JSON"))},
-     };
- 
-     // Extract backend, headers, and repeat values from the parsed body
-     let target_host = body.backend;
-     let target_url = body.target_url.unwrap_or(format!("{}", &target_host));
-     let repeat = body.repeat.unwrap_or(1);
-     let headers = body.headers.unwrap_or_default();
+    // Parse the JSON body from the incoming request
+    let body: ClientDynamicBackendRequestBody =
+        match req.take_body_json::<ClientDynamicBackendRequestBody>() {
+            Ok(b) => b,
+            Err(e) => {
+                println!("{:?}", e);
+                return Ok(Response::from_status(400).with_body("Invalid JSON"));
+            }
+        };
 
-     // Dynamic backend builder
-     let target_backend = Backend::builder(&target_host, &target_host)
-     .override_host(&target_host)
-     .connect_timeout(Duration::from_secs(1))
-     .first_byte_timeout(Duration::from_secs(15))
-     .between_bytes_timeout(Duration::from_secs(10))
-     .enable_ssl()
-     .sni_hostname(&target_host)
-     .finish()?;
- 
-     // Initialize a response object to store the final response
-     let mut final_response = Response::new();
+    // Extract backend, headers, and repeat values from the parsed body
+    let target_host = body.backend;
+    let target_url = body.target_url.unwrap_or(format!("{}", &target_host));
+    let repeat = body.repeat.unwrap_or(1);
+    let headers = body.headers.unwrap_or(json!({}));
+
+    // Dynamic backend builder
+    let target_backend = Backend::builder(&target_host, &target_host)
+        .override_host(&target_host)
+        .connect_timeout(Duration::from_secs(1))
+        .first_byte_timeout(Duration::from_secs(15))
+        .between_bytes_timeout(Duration::from_secs(10))
+        .enable_ssl()
+        .sni_hostname(&target_host)
+        .finish()?;
+
+    // Initialize a response object to store the final response
+    let mut final_response = Response::new();
 
     // Create a new backend request
     let mut backend_req_builder = Request::new(Method::GET, format!("https://{}", target_url));
 
     // Add custom headers to the backend request
-    for (header_name, header_value) in &headers {
-        backend_req_builder.set_header(header_name, HeaderValue::from_str(header_value).unwrap());
+    if let Some(headers_obj) = headers.as_object() {
+        for (header_name, header_value) in headers_obj {
+            backend_req_builder.set_header(
+                header_name,
+                HeaderValue::from_str(header_value.as_str().unwrap_or("")).unwrap(),
+            );
+        }
     }
- 
-     // Repeat the request the specified number of times
-     for _ in 0..repeat {
 
+    // Repeat the request the specified number of times
+    for _ in 0..repeat {
         // Clone the previously built request
         let backend_req = backend_req_builder.clone_with_body();
- 
+
         // Send the request to the backend
         let backend_resp = backend_req.send(&target_backend)?;
 
         // Append the backend response to the final response
         final_response.set_body(backend_resp.into_body());
-     }
- 
-     // Calculate the elapsed time and set it as a response header
-     let duration = start.elapsed().as_millis();
-     final_response.set_header("response-timing", HeaderValue::from_str(&duration.to_string()).unwrap());
- 
-     // Return the final response
-     Ok(final_response)
+    }
+
+    // Calculate the elapsed time and set it as a response header
+    let duration = start.elapsed().as_millis();
+    final_response.set_header(
+        "response-timing",
+        HeaderValue::from_str(&duration.to_string()).unwrap(),
+    );
+
+    // Return the final response
+    Ok(final_response)
 }
 
 fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
@@ -186,7 +196,7 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
             status_str = ep.split("=").collect::<Vec<&str>>()[1];
             status_parsed = status_str.parse::<u16>()?;
             return status_result(status_parsed, resp);
-        },
+        }
         _ => (),
     }
 
@@ -253,9 +263,7 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 
     // Get the value back from the KV store (as a string),
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
-    let static_asset: Body = store
-        .lookup(&req_filename_lookup)?
-        .unwrap_or(Body::new());
+    let static_asset: Body = store.lookup(&req_filename_lookup)?.unwrap_or(Body::new());
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
@@ -287,7 +295,7 @@ fn chatroom(req: Request, _resp: Response) -> Result<Response, Error> {
         "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
         _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
     };
-    return Ok(resp)
+    return Ok(resp);
 }
 
 #[test]
