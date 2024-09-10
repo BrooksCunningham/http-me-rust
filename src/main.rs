@@ -140,8 +140,8 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
         let backend_resp = backend_req.send(&target_backend)?;
 
         // Append the backend response to the final response
-        final_response.set_body(backend_resp.into_body());
         final_response.set_status(backend_resp.get_status());
+        final_response.set_body(backend_resp.into_body());
     }
 
     // Calculate the elapsed time and set it as a response header
