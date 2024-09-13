@@ -16,10 +16,10 @@ use std::time::Instant;
 
 mod fanout_util;
 
-fn handle_test(req: Request, chan: &str) -> Response {
+fn chatroom(req: Request, chan: &str) -> Response {
     match req.get_url().path() {
         "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
-        "/chatroom/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
+        "/chatroom/test/stream" => {println!("DEBUG: path_stream"); fanout_util::grip_response("text/plain", "stream", chan)},
         "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
         "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
         _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
@@ -40,7 +40,7 @@ fn main() -> Result<(), Error> {
         if client_req.get_header_str("Grip-Sig").is_some() {
             // Request is from Fanout, handle it here
             println!("DEBUG: from_fanout");
-            return Ok(handle_test(client_req, "test").send_to_client());
+            return Ok(chatroom(client_req, "test").send_to_client());
         } else {
             // Not from Fanout, route it through Fanout first
             println!("DEBUG: handoff_to_fanout");
@@ -95,7 +95,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/anything") => return Ok(anything(req, resp)?),
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
-        s if s.starts_with("/chatroom") => return Ok(chatroom(req, resp)?),
+        s if s.starts_with("/chatroom") => return Ok(chatroom(req, "test")),
         s if s.starts_with("/dynamic_backend") => return Ok(dynamic_backend(req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
@@ -316,24 +316,24 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     return Ok(resp);
 }
 
-fn chatroom(req: Request, _resp: Response) -> Result<Response, Error> {
-    // resp.set_body_text_plain("chatroom response");
-    let chan = "chatroomtest";
-    if req.get_header_str("Grip-Sig").is_none() {
-        // Not from Fanout, route it through Fanout first
-        return Ok(Response::from_status(StatusCode::OK).with_body("Going to fanout next time\n"));
-    }
-    let resp: Response = match req.get_url().path() {
-        // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
-        "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
-        "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
-        "/chatroom/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
-        "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
-        "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
-        _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
-    };
-    return Ok(resp);
-}
+// fn chatroom(req: Request, _resp: Response) -> Result<Response, Error> {
+//     // resp.set_body_text_plain("chatroom response");
+//     let chan = "chatroomtest";
+//     if req.get_header_str("Grip-Sig").is_none() {
+//         // Not from Fanout, route it through Fanout first
+//         return Ok(Response::from_status(StatusCode::OK).with_body("Going to fanout next time\n"));
+//     }
+//     let resp: Response = match req.get_url().path() {
+//         // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
+//         "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
+//         "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
+//         "/chatroom/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
+//         "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
+//         "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
+//         _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
+//     };
+//     return Ok(resp);
+// }
 
 #[test]
 fn test_homepage() {

@@ -11,7 +11,7 @@ use fastly::Response;
 /// with some Grip headers to tell Fanout to hold the connection for streaming.
 /// This function constructs such a response.
 pub fn grip_response(ctype: &str, ghold: &str, chan: &str) -> Response {
-    Response::from_status(StatusCode::OK)
+    return Response::from_status(StatusCode::OK)
         .with_header("Content-Type", ctype)
         .with_header("Grip-Hold", ghold)
         .with_header("Grip-Channel", chan)
