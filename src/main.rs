@@ -94,7 +94,7 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
         match req.take_body_json::<ClientDynamicBackendRequestBody>() {
             Ok(b) => b,
             Err(e) => {
-                println!("{:?}", e);
+                // println!("{:?}", e);
                 return Ok(Response::from_status(400).with_body("Invalid JSON"));
             }
         };
@@ -132,16 +132,18 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     }
 
     // Repeat the request the specified number of times
-    for _ in 0..repeat {
+    for i in 0..repeat {
         // Clone the previously built request
         let backend_req = backend_req_builder.clone_with_body();
 
         // Send the request to the backend
         let backend_resp = backend_req.send(&target_backend)?;
 
-        // Append the backend response to the final response
-        final_response.set_status(backend_resp.get_status());
-        final_response.set_body(backend_resp.into_body());
+        if i == repeat {
+            // Append the backend response to the final response
+            final_response.set_status(backend_resp.get_status());
+            final_response.set_body(backend_resp.into_body());
+        }
     }
 
     // Calculate the elapsed time and set it as a response header
