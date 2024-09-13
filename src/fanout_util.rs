@@ -1,6 +1,6 @@
 use fastly::http::StatusCode;
-use fastly::Response;
 use fastly::Request;
+use fastly::Response;
 
 /// Returns a GRIP response to initialize a stream
 ///
@@ -57,5 +57,5 @@ pub fn handle_fanout_ws(mut req: Request, chan: &str) -> Response {
     println!("{:?}", std::str::from_utf8(&resp_body));
 
     resp.set_body(resp_body);
-    return resp
+    return resp;
 }
