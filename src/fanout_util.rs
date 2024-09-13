@@ -15,7 +15,7 @@ pub fn grip_response(ctype: &str, ghold: &str, chan: &str) -> Response {
         .with_header("Content-Type", ctype)
         .with_header("Grip-Hold", ghold)
         .with_header("Grip-Channel", chan)
-        .with_body("")
+        .with_body("{\"msg\":\"hello world\"}")
 }
 
 /// Returns a WebSocket-over-HTTP formatted TEXT message

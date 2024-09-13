@@ -214,7 +214,7 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
     if path_segments.len() < 2 {
         resp.set_status(500);
         let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
-        resp.set_body_json(&data);
+        let _ = resp.set_body_json(&data);
         return Ok(resp);
     }
 
@@ -289,7 +289,7 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 fn chatroom(req: Request, _resp: Response) -> Result<Response, Error> {
     // resp.set_body_text_plain("chatroom response");
     let chan = "chatroomtest";
-    let resp = match req.get_url().path() {
+    let resp: Response = match req.get_url().path() {
         // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
         "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
         "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
