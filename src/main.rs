@@ -113,6 +113,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
 #[derive(Deserialize)]
 struct ClientDynamicBackendRequestBody {
     backend: String,
+    method: Option<String>,
     target_url: Option<String>,
     headers: Option<Value>,
     repeat: Option<u64>,
@@ -126,7 +127,7 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     let body: ClientDynamicBackendRequestBody =
         match req.take_body_json::<ClientDynamicBackendRequestBody>() {
             Ok(b) => b,
-            Err(e) => {
+            Err(_) => {
                 // println!("{:?}", e);
                 return Ok(Response::from_status(400).with_body("Invalid JSON"));
             }
@@ -137,6 +138,7 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     let target_url = body.target_url.unwrap_or(format!("{}", &target_host));
     let repeat = body.repeat.unwrap_or(1);
     let headers = body.headers.unwrap_or(json!({}));
+    let target_method = body.method.unwrap_or("GET".to_string());
 
     // Dynamic backend builder
     let target_backend = Backend::builder(&target_host, &target_host)
@@ -151,8 +153,10 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     // Initialize a response object to store the final response
     let mut final_response = Response::new();
 
+    
+
     // Create a new backend request
-    let mut backend_req_builder = Request::new(Method::GET, format!("https://{}", target_url));
+    let mut backend_req_builder = Request::new(target_method, format!("https://{}", target_url));
 
     // Add custom headers to the backend request
     println!("DEBUG {}", headers);
@@ -175,6 +179,8 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     for i in 0..repeat {
         // Clone the previously built request
         let backend_req = backend_req_builder.clone_with_body();
+
+        println!("{:?}",  backend_req.get_header("bypass-waf"));
 
         // Send the request to the backend
         let backend_resp = backend_req.send(&target_backend)?;
