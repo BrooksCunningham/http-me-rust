@@ -16,8 +16,37 @@ use std::time::Instant;
 
 mod fanout_util;
 
+fn handle_test(req: Request, chan: &str) -> Response {
+    match req.get_url().path() {
+        "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
+        "/chatroom/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
+        "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
+        "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
+        _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
+    }
+}
+
 fn main() -> Result<(), Error> {
     let client_req = Request::from_client();
+
+    if client_req.get_header_str("Grip-Sig").is_some() && client_req.get_url().path().contains("chatroom") {
+        // Send to fanout if the request has grip-sig
+        return Ok(client_req.handoff_fanout("self")?);
+    }
+
+    // Request is a test request - from client, or from Fanout
+    if client_req.get_url().path().starts_with("/chatroom") {
+        if client_req.get_header_str("Grip-Sig").is_some() {
+            // Request is from Fanout, handle it here
+            return Ok(handle_test(client_req, "test").send_to_client());
+        } else {
+            // Not from Fanout, route it through Fanout first
+            return Ok(client_req.handoff_fanout("self")?);
+        }
+    }
+
+
+
     let mut server_resp = handler(client_req)?;
 
     match server_resp.get_header_str("action-tarpit") {
@@ -289,6 +318,10 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 fn chatroom(req: Request, _resp: Response) -> Result<Response, Error> {
     // resp.set_body_text_plain("chatroom response");
     let chan = "chatroomtest";
+    if req.get_header_str("Grip-Sig").is_none() {
+        // Not from Fanout, route it through Fanout first
+        return Ok(Response::from_status(StatusCode::OK).with_body("Going to fanout next time\n"));
+    }
     let resp: Response = match req.get_url().path() {
         // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
         "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
