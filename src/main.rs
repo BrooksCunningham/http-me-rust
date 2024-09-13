@@ -172,7 +172,7 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
         // Send the request to the backend
         let backend_resp = backend_req.send(&target_backend)?;
 
-        if i == repeat {
+        if i + 1 == repeat {
             // Append the backend response to the final response
             final_response.set_status(backend_resp.get_status());
             final_response.set_body(backend_resp.into_body());
