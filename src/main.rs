@@ -27,6 +27,12 @@ fn handle_test(req: Request, chan: &str) -> Response {
 }
 
 fn main() -> Result<(), Error> {
+    // Log service version
+    println!(
+        "FASTLY_SERVICE_VERSION: {}",
+        std::env::var("FASTLY_SERVICE_VERSION").unwrap_or_else(|_| String::new())
+    );
+
     let client_req = Request::from_client();
 
     // Request is a test request - from client, or from Fanout
@@ -41,8 +47,6 @@ fn main() -> Result<(), Error> {
             return Ok(client_req.handoff_fanout("self")?);
         }
     }
-
-
 
     let mut server_resp = handler(client_req)?;
 
