@@ -155,8 +155,10 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     let mut backend_req_builder = Request::new(Method::GET, format!("https://{}", target_url));
 
     // Add custom headers to the backend request
+    println!("DEBUG {}", headers);
     if let Some(headers_obj) = headers.as_object() {
         for (header_name, header_value) in headers_obj {
+            println!("{}:{}", header_name, header_value);
             backend_req_builder.set_header(
                 header_name,
                 HeaderValue::from_str(header_value.as_str().unwrap_or("")).unwrap(),
