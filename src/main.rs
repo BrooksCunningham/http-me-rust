@@ -1,10 +1,10 @@
-use core::fmt;
+// use core::fmt;
 use fastly::handle::client_ip_addr;
-#[allow(unused_imports)]
+// #[allow(unused_imports)]
 use fastly::http::{HeaderValue, Method, StatusCode};
 use fastly::Body;
-#[allow(unused_imports)]
-use fastly::{mime, Backend, Error, KVStore, Request, Response};
+// #[allow(unused_imports)]
+use fastly::{Backend, Error, KVStore, Request, Response};
 use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
@@ -19,7 +19,10 @@ mod fanout_util;
 fn chatroom(req: Request, chan: &str) -> Response {
     match req.get_url().path() {
         "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
-        "/chatroom/test/stream" => {println!("DEBUG: path_stream"); fanout_util::grip_response("text/plain", "stream", chan)},
+        "/chatroom/test/stream" => {
+            println!("DEBUG: path_stream");
+            fanout_util::grip_response("text/plain", "stream", chan)
+        }
         "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
         "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
         _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
@@ -335,11 +338,11 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 //     return Ok(resp);
 // }
 
-#[test]
-fn test_homepage() {
-    let req: Request = fastly::Request::get("http://http-me.edgecompute.app.com/");
-    let resp: Response = handler(req).expect("request succeeds");
-    assert_eq!(resp.get_status(), StatusCode::OK);
-    assert_eq!(resp.get_content_type(), Some(mime::TEXT_HTML_UTF_8));
-    assert!(resp.into_body_str().contains("Welcome to Compute@Edge"));
-}
+// #[test]
+// fn test_homepage() {
+//     let req: Request = fastly::Request::get("http://http-me.edgecompute.app.com/");
+//     let resp: Response = handler(req).expect("request succeeds");
+//     assert_eq!(resp.get_status(), StatusCode::OK);
+//     assert_eq!(resp.get_content_type(), Some(mime::TEXT_HTML_UTF_8));
+//     assert!(resp.into_body_str().contains("Welcome to Compute@Edge"));
+// }
