@@ -33,9 +33,11 @@ fn main() -> Result<(), Error> {
     if client_req.get_url().path().starts_with("/chatroom") {
         if client_req.get_header_str("Grip-Sig").is_some() {
             // Request is from Fanout, handle it here
+            println!("DEBUG: from_fanout");
             return Ok(handle_test(client_req, "test").send_to_client());
         } else {
             // Not from Fanout, route it through Fanout first
+            println!("DEBUG: handoff_to_fanout");
             return Ok(client_req.handoff_fanout("self")?);
         }
     }
