@@ -161,8 +161,13 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
             println!("{}:{}", header_name, header_value);
             backend_req_builder.set_header(
                 header_name,
-                HeaderValue::from_str(header_value.as_str().unwrap_or("")).unwrap(),
+                header_value.to_string()
             );
+
+            // backend_req_builder.set_header(
+            //     header_name,
+            //     HeaderValue::from_str(header_value.as_str().unwrap_or("")).unwrap(),
+            // );
         }
     }
 
