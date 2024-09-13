@@ -29,11 +29,6 @@ fn handle_test(req: Request, chan: &str) -> Response {
 fn main() -> Result<(), Error> {
     let client_req = Request::from_client();
 
-    if client_req.get_header_str("Grip-Sig").is_some() && client_req.get_url().path().contains("chatroom") {
-        // Send to fanout if the request has grip-sig
-        return Ok(client_req.handoff_fanout("self")?);
-    }
-
     // Request is a test request - from client, or from Fanout
     if client_req.get_url().path().starts_with("/chatroom") {
         if client_req.get_header_str("Grip-Sig").is_some() {
