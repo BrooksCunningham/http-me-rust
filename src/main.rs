@@ -153,8 +153,6 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     // Initialize a response object to store the final response
     let mut final_response = Response::new();
 
-    
-
     // Create a new backend request
     let mut backend_req_builder = Request::new(target_method, format!("https://{}", target_url));
 
