@@ -160,10 +160,11 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
     println!("DEBUG {}", headers);
     if let Some(headers_obj) = headers.as_object() {
         for (header_name, header_value) in headers_obj {
+            let header_value_str = header_value.to_owned().take();
             println!("{}:{}", header_name, header_value);
             backend_req_builder.set_header(
                 header_name,
-                header_value.to_string()
+                header_value_str.to_string()
             );
 
             // backend_req_builder.set_header(
