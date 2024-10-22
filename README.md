@@ -49,10 +49,12 @@ https://developer.fastly.com/reference/cli/kv-store-entry/
 
 # WORK IN PROGRESS - Not Yet working - Testing with websockets
 
+```
 curl https://http-me.edgecompute.app/chatroom/test/websocket
 curl https://http-me.edgecompute.app/chatroom/test/stream
 curl https://http-me.edgecompute.app/chatroom/test/sse
 curl https://http-me.edgecompute.app/chatroom/test/long-poll
+```
 
 For requests made to domains ending in `.edgecompute.app`, the app will handle requests to the following endpoints without forwarding to the origin:
 
