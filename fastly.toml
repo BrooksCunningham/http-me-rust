@@ -12,9 +12,6 @@ service_id = ""
 
   [local_server.backends]
 
-    [local_server.backends.backend_httpme]
-      url = "http://http-me.glitch.me/"
-
     [local_server.backends.backend_ngwaf]
       url = "http://127.0.0.1:8080/"
 

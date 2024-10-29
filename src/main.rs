@@ -14,21 +14,6 @@ use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
 
-mod fanout_util;
-
-fn chatroom(req: Request, chan: &str) -> Response {
-    match req.get_url().path() {
-        "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
-        "/chatroom/test/stream" => {
-            println!("DEBUG: path_stream");
-            fanout_util::grip_response("text/plain", "stream", chan)
-        }
-        "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
-        "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
-        _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
-    }
-}
-
 fn main() -> Result<(), Error> {
     // Log service version
     println!(
@@ -37,19 +22,6 @@ fn main() -> Result<(), Error> {
     );
 
     let client_req = Request::from_client();
-
-    // Request is a test request - from client, or from Fanout
-    if client_req.get_url().path().starts_with("/chatroom") {
-        if client_req.get_header_str("Grip-Sig").is_some() {
-            // Request is from Fanout, handle it here
-            println!("DEBUG: from_fanout");
-            return Ok(chatroom(client_req, "test").send_to_client());
-        } else {
-            // Not from Fanout, route it through Fanout first
-            println!("DEBUG: handoff_to_fanout");
-            return Ok(client_req.handoff_fanout("self")?);
-        }
-    }
 
     let mut server_resp = handler(client_req)?;
 
@@ -83,6 +55,14 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         _ => resp,
     };
 
+    resp = match req.get_query_parameter("status") {
+        Some(ep) => {
+            println!("{}", ep);
+            status(&req, resp)?
+        }
+        _ => resp,
+    };
+
     // tarpit implementation
     // https://github.com/BrooksCunningham/Fastly-Training-Demos/blob/d35589eb6652c9f8df29e407d4a6177f11c5ff7a/TarPit/src/main.rs#L27
 
@@ -98,7 +78,6 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/anything") => return Ok(anything(req, resp)?),
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
-        s if s.starts_with("/chatroom") => return Ok(chatroom(req, "test")),
         s if s.starts_with("/dynamic_backend") => return Ok(dynamic_backend(req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
@@ -162,10 +141,7 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
         for (header_name, header_value) in headers_obj {
             let header_value_str = header_value.to_owned().take();
             println!("{}:{}", header_name, header_value_str);
-            backend_req_builder.set_header(
-                header_name,
-                header_value_str.to_string()
-            );
+            backend_req_builder.set_header(header_name, header_value_str.to_string());
 
             // backend_req_builder.set_header(
             //     header_name,
@@ -179,7 +155,7 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
         // Clone the previously built request
         let backend_req = backend_req_builder.clone_with_body();
 
-        println!("{:?}",  backend_req.get_header("bypass-waf"));
+        println!("{:?}", backend_req.get_header("bypass-waf"));
 
         // Send the request to the backend
         let backend_resp = backend_req.send(&target_backend)?;
@@ -248,6 +224,14 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
         _ => (),
     }
 
+    match req.get_query_parameter("status") {
+        Some(ep) => {
+            status_parsed = ep.parse::<u16>()?;
+            return status_result(status_parsed, resp);
+        }
+        _ => (),
+    }
+
     let req_url = req.get_url();
     let path_segments: Vec<&str> = req_url
         .path_segments()
@@ -267,22 +251,22 @@ fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
     status_parsed = status_str.parse::<u16>()?;
 
     return status_result(status_parsed, resp);
+}
 
-    fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error> {
-        return match status_u16 {
-            status_int => {
-                // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
-                resp.set_status(status_int);
-                Ok(resp)
-            }
-            _ => {
-                resp.set_status(500);
-                let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
-                let _ = resp.set_body_json(&data);
-                Ok(resp)
-            }
-        };
-    }
+fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error> {
+    return match status_u16 {
+        status_int => {
+            // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
+            resp.set_status(status_int);
+            Ok(resp)
+        }
+        _ => {
+            resp.set_status(500);
+            let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
+            let _ = resp.set_body_json(&data);
+            Ok(resp)
+        }
+    };
 }
 
 fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
@@ -330,25 +314,6 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 
     return Ok(resp);
 }
-
-// fn chatroom(req: Request, _resp: Response) -> Result<Response, Error> {
-//     // resp.set_body_text_plain("chatroom response");
-//     let chan = "chatroomtest";
-//     if req.get_header_str("Grip-Sig").is_none() {
-//         // Not from Fanout, route it through Fanout first
-//         return Ok(Response::from_status(StatusCode::OK).with_body("Going to fanout next time\n"));
-//     }
-//     let resp: Response = match req.get_url().path() {
-//         // "/chatroom" => fanout_util::handle_fanout_ws(req, chan),
-//         "/chatroom" => fanout_util::grip_response("text/plain", "response", chan),
-//         "/chatroom/test/long-poll" => fanout_util::grip_response("text/plain", "response", chan),
-//         "/chatroom/test/stream" => fanout_util::grip_response("text/plain", "stream", chan),
-//         "/chatroom/test/sse" => fanout_util::grip_response("text/event-stream", "stream", chan),
-//         "/chatroom/test/websocket" => fanout_util::handle_fanout_ws(req, chan),
-//         _ => Response::from_status(StatusCode::NOT_FOUND).with_body("No such test endpoint\n"),
-//     };
-//     return Ok(resp);
-// }
 
 // #[test]
 // fn test_homepage() {
