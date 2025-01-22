@@ -17,7 +17,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Compute@Edge Package 
-      uses: fastly/compute-actions/build@v6    
+      uses: fastly/compute-actions/build@v11
     - name: Run local Compute # skips the build process
       run: |
         fastly compute serve --skip-build &
