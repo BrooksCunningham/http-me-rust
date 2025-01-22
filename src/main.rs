@@ -3,12 +3,10 @@ use fastly::handle::client_ip_addr;
 // #[allow(unused_imports)]
 use fastly::http::{HeaderValue, Method, StatusCode};
 use fastly::Body;
-// #[allow(unused_imports)]
 use fastly::{Backend, Error, KVStore, Request, Response};
 use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
-// use std::{thread, time};
 use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
@@ -79,6 +77,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/dynamic_backend") => return Ok(dynamic_backend(req, resp)?),
+        s if s.starts_with("/client_ip_data") => return Ok(client_ip_data(req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
 
@@ -313,6 +312,46 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     resp.set_body(static_asset);
 
     return Ok(resp);
+}
+
+fn client_ip_data(mut req: Request, mut resp: Response) -> Result<Response, Error> {
+    // https://docs.rs/fastly/0.11.2/fastly/geo/fn.geo_lookup.html
+    
+    let client_ip = req.get_client_ip_addr().unwrap();
+
+    // Use geo_lookup to get the Geo object
+
+    let geo_data = fastly::geo::geo_lookup(client_ip).unwrap();
+    
+    // Dynamically build the JSON object
+    let json_data = json!({
+        "as_name": geo_data.as_name(),
+        "as_number": geo_data.as_number(),
+        "area_code": geo_data.area_code(),
+        "city": geo_data.city(),
+        "conn_speed": geo_data.conn_speed(),
+        "conn_type": geo_data.conn_type(),
+        "continent": geo_data.continent(),
+        "country_code": geo_data.country_code(),
+        "country_code3": geo_data.country_code3(),
+        "country_name": geo_data.country_name(),
+        "latitude": geo_data.latitude(),
+        "longitude": geo_data.longitude(),
+        "metro_code": geo_data.metro_code(),
+        "postal_code": geo_data.postal_code(),
+        "proxy_description": geo_data.proxy_description(),
+        "proxy_type": geo_data.proxy_type(),
+        "region": geo_data.region(),
+        "utc_offset": geo_data.utc_offset()
+    });
+
+    // Serialize the JSON object to a pretty-printed string
+    // let json_string = serde_json::to_string_pretty(&json_data).expect("Failed to serialize JSON");
+    // Print or return the JSON string
+    // println!("{}", json_string);
+
+    let _ = resp.set_body_json(&json_data);
+    Ok(resp)
 }
 
 // #[test]
