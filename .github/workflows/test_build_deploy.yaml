@@ -16,6 +16,10 @@ jobs:
       uses: fastly/compute-actions/setup@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@1.82.0
+      with:
+        target: wasm32-wasi # WebAssembly target
     - name: Build Compute@Edge Package 
       uses: fastly/compute-actions/build@v11
     - name: Run local Compute # skips the build process
