@@ -53,16 +53,17 @@ jobs:
     needs: run-waf-tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
-          toolchain: 1.54.0 # current Rust toolchain for Compute@Edge
-          target: wasm32-wasi # WebAssembly target
+        target: wasm32-wasi # WebAssembly target
+        # toolchain: 1.54.0 # current Rust toolchain for Compute@Edge
+          
 
     - name: Deploy to Compute@Edge
-      uses: fastly/compute-actions@v5
+      uses: fastly/compute-actions@v11
       env:
         FASTLY_API_TOKEN: ${{ secrets.FASTLY_API_TOKEN }}
       with:
