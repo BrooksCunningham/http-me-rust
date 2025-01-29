@@ -210,7 +210,7 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     Ok(resp)
 }
 
-fn status(mut req: &Request, mut resp: Response) -> Result<Response, Error> {
+fn status(req: &Request, mut resp: Response) -> Result<Response, Error> {
     let mut status_str = "";
     let mut status_parsed = 200;
 
@@ -294,7 +294,8 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 
     // Get the value back from the KV store (as a string),
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
-    let static_asset: Body = store.lookup(&req_filename_lookup)?.unwrap_or(Body::new());
+    let static_asset: Body  = store.lookup(&req_filename_lookup)?.take_body();
+    // let static_asset: Body = lookup_response.unwrap_or(Body::new());
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
@@ -314,13 +315,12 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     return Ok(resp);
 }
 
-fn client_ip_data(mut req: Request, mut resp: Response) -> Result<Response, Error> {
+fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
     // https://docs.rs/fastly/0.11.2/fastly/geo/fn.geo_lookup.html
     
     let client_ip = req.get_client_ip_addr().unwrap();
 
     // Use geo_lookup to get the Geo object
-
     let geo_data = fastly::geo::geo_lookup(client_ip).unwrap();
     
     // Dynamically build the JSON object
