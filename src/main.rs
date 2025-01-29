@@ -273,9 +273,12 @@ fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
     let store: KVStore = KVStore::open("assets_store")?.unwrap();
 
     // Get the value back from the KV store (as a string),
-    let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
+    // store.look
+    // let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
+    let swagger_html: Body  = store.lookup("static-assets/swagger.html")?.take_body();
 
-    resp.set_body_text_html(&swagger_html);
+    // resp.set_body_text_html(&swagger_html);
+    resp.set_body(swagger_html);
     return Ok(resp);
 }
 
