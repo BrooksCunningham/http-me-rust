@@ -319,7 +319,7 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
     let client_ip = req.get_client_ip_addr().unwrap();
 
     // Use geo_lookup to get the Geo object
-    let geo_data = fastly::geo::geo_lookup(client_ip).unwrap();
+    let geo_data: fastly::geo::Geo = fastly::geo::geo_lookup(client_ip).unwrap();
     
     // Dynamically build the JSON object
     let json_data = json!({
