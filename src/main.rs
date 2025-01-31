@@ -272,12 +272,9 @@ fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
     // Define a KV store instance using the resource link name
     let store: KVStore = KVStore::open("assets_store")?.unwrap();
 
-    // Get the value back from the KV store (as a string),
-    // store.look
-    // let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
+    // Get the value back from the KV store (as a string)
     let swagger_html: Body  = store.lookup("static-assets/swagger.html")?.take_body();
 
-    // resp.set_body_text_html(&swagger_html);
     resp.set_body(swagger_html);
     return Ok(resp);
 }
@@ -298,7 +295,6 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     // Get the value back from the KV store (as a string),
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
     let static_asset: Body  = store.lookup(&req_filename_lookup)?.take_body();
-    // let static_asset: Body = lookup_response.unwrap_or(Body::new());
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
@@ -320,7 +316,6 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 
 fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
     // https://docs.rs/fastly/0.11.2/fastly/geo/fn.geo_lookup.html
-    
     let client_ip = req.get_client_ip_addr().unwrap();
 
     // Use geo_lookup to get the Geo object
@@ -349,10 +344,6 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
     });
 
     // Serialize the JSON object to a pretty-printed string
-    // let json_string = serde_json::to_string_pretty(&json_data).expect("Failed to serialize JSON");
-    // Print or return the JSON string
-    // println!("{}", json_string);
-
     let _ = resp.set_body_json(&json_data);
     Ok(resp)
 }
