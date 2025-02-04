@@ -328,6 +328,7 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
     
     // Dynamically build the JSON object
     let json_data = json!({
+        "ip_address": ip_addr.to_string(),
         "as_name": geo_data.as_name(),
         "as_number": geo_data.as_number(),
         "area_code": geo_data.area_code(),
