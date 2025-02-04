@@ -315,13 +315,22 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 }
 
 fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
-    // https://docs.rs/fastly/0.11.2/fastly/geo/fn.geo_lookup.html
-    let client_ip = req.get_client_ip_addr().unwrap();
+    // Attempt to get the 'ip' query parameter.
+    // If present, try to parse it as an IpAddr; if that fails, or if not present,
+    // use the client's actual IP address.
+    let ip_addr: std::net::IpAddr = if let Some(ip_param) = req.get_query_parameter("ip") {
+        match ip_param.parse() {
+            Ok(parsed_ip) => parsed_ip,
+            _ => req.get_client_ip_addr().unwrap(), // fallback to client's IP on parse error
+        }
+    } else {
+        req.get_client_ip_addr().unwrap()
+    };
 
-    // Use geo_lookup to get the Geo object
-    let geo_data: fastly::geo::Geo = fastly::geo::geo_lookup(client_ip).unwrap();
+    // Use geo_lookup to get the Geo object based on the chosen IP address.
+    let geo_data: fastly::geo::Geo = fastly::geo::geo_lookup(ip_addr).unwrap();
     
-    // Dynamically build the JSON object
+    // Dynamically build the JSON object with the geo lookup results.
     let json_data = json!({
         "as_name": geo_data.as_name(),
         "as_number": geo_data.as_number(),
@@ -343,7 +352,7 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
         "utc_offset": geo_data.utc_offset()
     });
 
-    // Serialize the JSON object to a pretty-printed string
+    // Set the JSON body of the response.
     let _ = resp.set_body_json(&json_data);
     Ok(resp)
 }
