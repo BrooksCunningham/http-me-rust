@@ -272,12 +272,9 @@ fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
     // Define a KV store instance using the resource link name
     let store: KVStore = KVStore::open("assets_store")?.unwrap();
 
-    // Get the value back from the KV store (as a string),
-    // store.look
-    // let swagger_html: String = store.lookup_str("static-assets/swagger.html")?.unwrap();
+    // Get the value back from the KV store (as a string)
     let swagger_html: Body  = store.lookup("static-assets/swagger.html")?.take_body();
 
-    // resp.set_body_text_html(&swagger_html);
     resp.set_body(swagger_html);
     return Ok(resp);
 }
@@ -298,7 +295,6 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     // Get the value back from the KV store (as a string),
     let req_filename_lookup = format!("static-assets/{}", &req_filename);
     let static_asset: Body  = store.lookup(&req_filename_lookup)?.take_body();
-    // let static_asset: Body = lookup_response.unwrap_or(Body::new());
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
@@ -319,14 +315,22 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 }
 
 fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
-    // https://docs.rs/fastly/0.11.2/fastly/geo/fn.geo_lookup.html
-    
-    let client_ip = req.get_client_ip_addr().unwrap();
+    // Attempt to get the 'ip' query parameter.
+    // If present, try to parse it as an IpAddr; if that fails, or if not present,
+    // use the client's actual IP address.
+    let ip_addr: std::net::IpAddr = if let Some(ip_param) = req.get_query_parameter("ip") {
+        match ip_param.parse() {
+            Ok(parsed_ip) => parsed_ip,
+            _ => req.get_client_ip_addr().unwrap(), // fallback to client's IP on parse error
+        }
+    } else {
+        req.get_client_ip_addr().unwrap()
+    };
 
-    // Use geo_lookup to get the Geo object
-    let geo_data = fastly::geo::geo_lookup(client_ip).unwrap();
+    // Use geo_lookup to get the Geo object based on the chosen IP address.
+    let geo_data: fastly::geo::Geo = fastly::geo::geo_lookup(ip_addr).unwrap();
     
-    // Dynamically build the JSON object
+    // Dynamically build the JSON object with the geo lookup results.
     let json_data = json!({
         "ip_address": ip_addr.to_string(),
         "as_name": geo_data.as_name(),
@@ -349,11 +353,7 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
         "utc_offset": geo_data.utc_offset()
     });
 
-    // Serialize the JSON object to a pretty-printed string
-    // let json_string = serde_json::to_string_pretty(&json_data).expect("Failed to serialize JSON");
-    // Print or return the JSON string
-    // println!("{}", json_string);
-
+    // Set the JSON body of the response.
     let _ = resp.set_body_json(&json_data);
     Ok(resp)
 }
