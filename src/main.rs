@@ -341,7 +341,6 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
         "conn_type": geo_data.conn_type(),
         "continent": geo_data.continent(),
         "country_code": geo_data.country_code(),
-        "country_code3": geo_data.country_code3(),
         "country_name": geo_data.country_name(),
         "latitude": geo_data.latitude(),
         "longitude": geo_data.longitude(),
@@ -349,8 +348,7 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
         "postal_code": geo_data.postal_code(),
         "proxy_description": geo_data.proxy_description(),
         "proxy_type": geo_data.proxy_type(),
-        "region": geo_data.region(),
-        "utc_offset": geo_data.utc_offset()
+        "region": geo_data.region()
     });
 
     // Set the JSON body of the response.
