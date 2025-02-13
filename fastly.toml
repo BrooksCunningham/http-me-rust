@@ -9,17 +9,100 @@ name = "http-me-rust"
 service_id = ""
 
 [local_server]
-
-  [local_server.backends]
-
-    [local_server.backends.backend_ngwaf]
-      url = "http://127.0.0.1:8080/"
-
-[setup]
-
-  [setup.backends]
-
-    [setup.backends.backend_httpme]
-      address = "http-me.glitch.me"
-      description = "HTTP me is a tiny express app initally designed to replicate the features of HTTPBin.org"
-      port = 443
+  [local_server.kv_stores]
+    [[local_server.kv_stores.assets_store]]
+      key = "challenge-robot.jpg"
+      file = "static-assets/challenge-robot.jpg"
+    [[local_server.kv_stores.assets_store]]
+      key = "csp-checker.js"
+      file = "static-assets/csp-checker.js"
+    [[local_server.kv_stores.assets_store]]
+      key = "csp-violation.html"
+      file = "static-assets/csp-violation.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "favicon-16x16.png"
+      file = "static-assets/favicon-16x16.png"
+    [[local_server.kv_stores.assets_store]]
+      key = "favicon-32x32.png"
+      file = "static-assets/favicon-32x32.png"
+    [[local_server.kv_stores.assets_store]]
+      key = "form-fetch.html"
+      file = "static-assets/form-fetch.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "form-login.html"
+      file = "static-assets/form-login.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "form-post-embedded-challenge.html"
+      file = "static-assets/form-post-embedded-challenge.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "form-post.html"
+      file = "static-assets/form-post.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "graphql-explorer.html"
+      file = "static-assets/graphql-explorer.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "htmx-qs.html"
+      file = "static-assets/htmx-qs.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "httpbin-openapi-spec.json"
+      file = "static-assets/httpbin-openapi-spec.json"
+    [[local_server.kv_stores.assets_store]]
+      key = "image-upload.html"
+      file = "static-assets/image-upload.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "index.css"
+      file = "static-assets/index.css"
+    [[local_server.kv_stores.assets_store]]
+      key = "index.html"
+      file = "static-assets/index.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "oauth2-redirect.html"
+      file = "static-assets/oauth2-redirect.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "openapi-spec.json"
+      file = "static-assets/openapi-spec.json"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-initializer.js"
+      file = "static-assets/swagger-initializer.js"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-bundle.js"
+      file = "static-assets/swagger-ui-bundle.js"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-bundle.js.map"
+      file = "static-assets/swagger-ui-bundle.js.map"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui.css"
+      file = "static-assets/swagger-ui.css"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui.css.map"
+      file = "static-assets/swagger-ui.css.map"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-es-bundle-core.js"
+      file = "static-assets/swagger-ui-es-bundle-core.js"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-es-bundle-core.js.map"
+      file = "static-assets/swagger-ui-es-bundle-core.js.map"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-es-bundle.js"
+      file = "static-assets/swagger-ui-es-bundle.js"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-es-bundle.js.map"
+      file = "static-assets/swagger-ui-es-bundle.js.map"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-standalone-preset.js"
+      file = "static-assets/swagger-ui-standalone-preset.js"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui-standalone-preset.js.map"
+      file = "static-assets/swagger-ui-standalone-preset.js.map"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui.js"
+      file = "static-assets/swagger-ui.js"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger-ui.js.map"
+      file = "static-assets/swagger-ui.js.map"
+    [[local_server.kv_stores.assets_store]]
+      key = "swagger.html"
+      file = "static-assets/swagger.html"
+    [[local_server.kv_stores.assets_store]]
+      key = "websocket-chat.html"
+      file = "static-assets/websocket-chat.html"
