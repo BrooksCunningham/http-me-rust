@@ -17,7 +17,7 @@ jobs:
       with:
         target: wasm32-wasi # WebAssembly target
     - name: Set up Fastly CLI
-      uses: fastly/compute-actions/setup@v6
+      uses: fastly/compute-actions/setup@v11
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Compute@Edge Package 
