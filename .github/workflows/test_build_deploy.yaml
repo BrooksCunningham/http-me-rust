@@ -51,7 +51,7 @@ jobs:
         curl -si -X GET "http://0.0.0.0:8888/anything/from-gh-action-ngwaf-and-compute?ghaction=../../../etc/passwd"
     - name: Give time for log to upload
       run: |
-        sleep 120
+        sleep 30
         
   deploy:
     needs: run-waf-tests
