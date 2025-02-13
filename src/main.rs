@@ -293,8 +293,9 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     let store = KVStore::open("assets_store")?.unwrap();
 
     // Get the value back from the KV store (as a string),
-    let req_filename_lookup = format!("static-assets/{}", &req_filename);
-    let static_asset: Body  = store.lookup(&req_filename_lookup)?.take_body();
+    // let req_filename_lookup = format!("static-assets/{}", &req_filename);
+    // let static_asset: Body  = store.lookup(&req_filename_lookup)?.take_body();
+    let static_asset: Body  = store.lookup(&req_filename)?.take_body();
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
