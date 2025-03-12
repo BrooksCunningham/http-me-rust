@@ -216,6 +216,7 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
     });
 
     let _ = resp.set_body_json(&resp_data);
+    resp.set_header("Access-Control-Allow-Origin", "*");
     Ok(resp)
 }
 
