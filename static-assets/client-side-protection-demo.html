@@ -5,10 +5,10 @@
     <link rel="stylesheet" href="/static-assets/client-side-protection-demo.css">
 </head>
 <body>
+    <div class="warning">
+      <strong>Magecart Demo:</strong> This is a simplified demonstration of a Magecart-style attack.  In a real attack, the malicious script would be injected more subtly (e.g., through a compromised third-party library, supply chain attack, or XSS vulnerability).  Do not enter real credit card information.
+    </div>
     <div class="form-container">
-      <div class="warning">
-        <strong>Magecart Demo:</strong> This is a simplified demonstration of a Magecart-style attack.  In a real attack, the malicious script would be injected more subtly (e.g., through a compromised third-party library, supply chain attack, or XSS vulnerability).  Do not enter real credit card information.
-      </div>
       <form action="/anything/post" method="POST" id="credit-card-form">
           <label for="card-number">Card Number:</label>
           <input type="text" id="card-number" name="card_number" placeholder="XXXX XXXX XXXX XXXX" required>
