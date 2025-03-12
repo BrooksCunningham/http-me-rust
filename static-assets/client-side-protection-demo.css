@@ -1,0 +1,86 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.form-container {
+    position: relative; /* For absolute positioning of warning */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+form {
+   /* Removed background, padding, etc. from here */
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.expiry-cvv-container {
+    display: flex;
+    justify-content: space-between;
+}
+.expiry-container{
+     width: 48%;
+}
+.cvv-container {
+    width: 48%;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.error {
+    color: red;
+    margin-top: 5px;
+}
+.warning {
+  position: absolute; /* Positioned absolutely */
+  top: 0;             /* At the top of the container */
+  left: 0;            /* At the left edge */
+  width: 100%;       /* Full width */
+  box-sizing: border-box; /* Include padding in width */
+  background-color: #fff3cd;
+  border: 1px solid #ffecb5;
+  border-bottom: none; /*remove bottom border*/
+  color: #856404;
+  padding: 10px;
+  border-radius: 4px 4px 0 0;  /*Rounded just the top corners*/
+}
+/*Add padding to top of form so it doesn't overlap with the warning*/
+#credit-card-form{
+    padding-top: 55px; /* Increased padding */
+}
