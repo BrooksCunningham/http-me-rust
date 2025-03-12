@@ -178,6 +178,15 @@ fn dynamic_backend(mut req: Request, _resp: Response) -> Result<Response, Error>
 }
 
 fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
+    // Handle OPTIONS requests for CORS preflight
+    if req.get_method() == Method::OPTIONS {
+        return Ok(Response::from_status(StatusCode::OK)
+            .with_header("Access-Control-Allow-Origin", "*")
+            .with_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS") // Add methods you support
+            .with_header("Access-Control-Allow-Headers", "Content-Type, Authorization") // Add headers you need
+            // .with_header("Access-Control-Max-Age", "86400") // 24 hours.  Good practice, helps performance.
+            .with_body(Body::new())); // Important:  Empty body for the preflight response.
+    }
     let mut req_headers_data: Value = serde_json::json!({});
     for (n, v) in req.get_headers() {
         let req_header_name_str = n.as_str();
