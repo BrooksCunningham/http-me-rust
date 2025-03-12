@@ -89,7 +89,7 @@
     alert("This is an inline script. It should trigger a CSP violation (but may run with 'unsafe-inline').");
   </script>
 
-  <script src="https://evilhacker.com/malicious.js"></script>
+  <script src="https://evilhacker.edgecompute.app/malicious.js"></script>
 
 <!--   <p class = "allowed-example">Allowed Script Example:</p> -->
 <!--   <script src="https://cdn.example.com/legit.js"></script> -->
@@ -117,7 +117,7 @@
 
   <p>Disallowed Fetch Example:</p>
   <script>
-    fetch('https://malicious-api.com/data')
+    fetch('https://evilhacker.edgecompute.app/data')
       .then(response => response.json())
       .then(data => console.log(data))
       .catch(error => console.error('Fetch error:', error)); //CSP error will likely appear *before* this.
