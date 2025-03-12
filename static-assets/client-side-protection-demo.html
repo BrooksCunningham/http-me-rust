@@ -117,7 +117,7 @@
 
   <p>Disallowed Fetch Example:</p>
   <script>
-    fetch('https://evilhacker.edgecompute.app/data')
+    fetch('https://evilhacker.edgecompute.app/anything/fetch/data')
       .then(response => response.json())
       .then(data => console.log(data))
       .catch(error => console.error('Fetch error:', error)); //CSP error will likely appear *before* this.
