@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CSP Violation Demo</title>
+<!--   <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://cdn.example.com;
+    style-src 'self' https://fonts.googleapis.com;
+    img-src 'self' data:;
+    font-src 'self' https://fonts.gstatic.com;
+    connect-src 'self' https://api.example.com;
+    media-src 'self';
+    object-src 'none';
+    frame-src 'none';
+    child-src 'none';
+    form-action 'self';
+    report-uri /csp-report-endpoint;
+    "> -->
+  <style>
+    /* Pixel Art Styling */
+    body {
+      font-family: monospace; /* Crucial for consistent character width */
+      background-color: #222; /* Dark background */
+      color: #eee;          /* Light text */
+      image-rendering: pixelated; /* Preserve pixel sharpness */
+      image-rendering: crisp-edges; /* For non-scaled images */
+      line-height: 1; /* Tight spacing */
+    }
+
+    h1 {
+      color: #ff5555; /* Red (violation style) */
+      font-size: 2em; /* Larger heading */
+      margin-bottom: 0.5em;
+      text-shadow: 2px 2px 0px #000; /* Pixelated drop shadow */
+        -webkit-text-stroke: 1px black;
+    }
+
+    p {
+      margin-bottom: 1em;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    button {
+      font-family: monospace;
+      font-size: 1em;
+      padding: 4px 8px;
+      border: 2px solid #666; /* Pixelated border */
+      background-color: #444;
+      color: #eee;
+      box-shadow: 2px 2px 0px #000; /* Inset pixel shadow */
+    }
+     button:active { /* "Pressed" state */
+      box-shadow: 1px 1px 0px #000; /* Less shadow when pressed */
+      transform: translate(1px, 1px); /* Slight movement */
+    }
+
+    .container {
+        border: 4px solid #666;
+        padding: 15px;
+        box-shadow: 4px 4px 0 black;
+        background-color: #333;
+    }
+
+    .allowed-example {
+        color: #55ff55; /*Green for good examples*/
+    }
+
+    .font-example-1 {
+      font-family: 'MaliciousFont', monospace;  /*Should use monospace fallback*/
+      color: #cc55cc;
+    }
+    .font-example-2 {
+       font-family: 'Roboto', monospace;
+    }
+
+  </style>
+    <link rel="stylesheet" href="https://malicioushacker.com/styles.css">
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <h1>Content Security Policy Violation Demo Page</h1>
+
+  <p>This page demonstrates various Content Security Policy violations.</p>
+
+  <script>
+    alert("This is an inline script. It should trigger a CSP violation (but may run with 'unsafe-inline').");
+  </script>
+
+  <script src="https://evilhacker.com/malicious.js"></script>
+
+<!--   <p class = "allowed-example">Allowed Script Example:</p> -->
+<!--   <script src="https://cdn.example.com/legit.js"></script> -->
+
+
+<!--   <img src="http://example.com/image.jpg" alt="External Image" width="32" height="32"> -->
+
+   <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/AxMDAwNdAABhDAUyMdg1jAAAAABJRU5ErkJggg==" alt="Data URI Image" width="32" height="32">
+
+  <div class="font-example-1">
+        This text attempts to use a disallowed font.
+  </div>
+  <div class="font-example-2">
+      This text should be in Roboto
+  </div>
+
+  <p class="allowed-example">Allowed Fetch Example:</p>
+
+    <script>
+    fetch('/anything/fetch')
+      .then(response => response.json())
+      .then(data => console.log("Allowed Fetch:", data))
+      .catch(error => console.error('Fetch error:', error));
+  </script>
+
+  <p>Disallowed Fetch Example:</p>
+  <script>
+    fetch('https://malicious-api.com/data')
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error('Fetch error:', error)); //CSP error will likely appear *before* this.
+  </script>
+    <p>Disallowed Form Example:</p>
+    <form action="https://malicious-forms.com/submit" method="post">
+        <input type="text" name="username" placeholder="Username">
+        <input type="password" name="password" placeholder="Password">
+        <button type="submit">Submit (Violation)</button>
+    </form>
+    <p class = "allowed-example">Allowed Form Example:</p>
+    <form action="/anything/post" method="post">
+        <input type="text" name="username" placeholder="Username">
+        <input type="password" name="password" placeholder="Password">
+        <button type="submit">Submit (Allowed)</button>
+    </form>
+    <p>Eval Example:</p>
+     <script>
+        try {
+            eval("console.log('This is from eval() - a major violation!');");
+        } catch (e) {
+            console.error("Eval failed (as expected):", e);
+        }
+    </script>
+    <p>New Function Example:</p>
+
+   <script>
+      try {
+        const myFunc = new Function('a', 'b', 'return a + b');
+        console.log("Result of new Function:", myFunc(2,3));
+      } catch (e) {
+          console.error("new Function failed:", e);
+      }
+    </script>
+</div>
+</body>
+</html>
