@@ -14,7 +14,7 @@ Check out the Github Actions. The Github Actions are defined in the folder `.git
 ## Return data sent to the server
 `curl 'https://http-me.edgecompute.app/anything/whydopirates?likequeryparams=args'`
 
-## return a custom status code at an arbitrary path
+## Return a custom status code at an arbitrary path
 `curl -i 'https://http-me.edgecompute.app/any/path/myquery?foo=bar' -H 'endpoint:status=302'`
 
 ## Security issues
