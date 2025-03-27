@@ -54,7 +54,7 @@
     </style>
   </head>
   <body>
-    <form method="post" action="/anything/post">
+    <form method="post" action="https://bcunning-ngwaf-lab.global.ssl.fastly.net/anything/post">
       <p><label>Customer name: <input type="text" name="custname"></label></p>
       <p><label>Telephone: <input type="tel" name="custtel"></label></p>
       <p><label>E-mail address: <input type="email" name="custemail"></label></p>
@@ -76,6 +76,10 @@
       <p><button type="submit">Submit order</button></p>
     </form>
 <!--     <script src="https://bcunning-ngwaf-lab.global.ssl.fastly.net/_fs-ch-1T1wmsGaOgGaSxcX/clientdetection.js"></script> -->
-    <iframe src="https://bcunning-ngwaf-lab.global.ssl.fastly.net/status/200?challenge-js"> <style="position: absolute;width:0;height:0;border:0;"></iframe>
+    <iframe 
+      src="https://bcunning-ngwaf-lab.global.ssl.fastly.net/status/200?challenge-js" 
+      style="display: none; border: none;" 
+      title="Hidden Challenge Frame (Inline Style)">
+      ></iframe>
   </body>
 </html>
