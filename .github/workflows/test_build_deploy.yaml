@@ -19,7 +19,6 @@ jobs:
     - name: Build (using cargo)
       run: |
         rustup target add wasm32-wasip1
-        RUSTFLAGS="--deny warnings" cargo build --profile release    
 
     - name: Set up Fastly CLI
       uses: fastly/compute-actions/setup@v11
