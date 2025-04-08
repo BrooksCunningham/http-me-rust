@@ -25,6 +25,8 @@ jobs:
       uses: fastly/compute-actions/build@v11
     - name: Run local Compute # skips the build process
       run: |
+        rustup target add wasm32-wasip1
+        RUSTFLAGS="--deny warnings" cargo build --profile release
         fastly compute serve --skip-build &
         sleep 5
         curl -si -X GET "http://0.0.0.0:7676/anything/from-gh-action-c-and-e"
