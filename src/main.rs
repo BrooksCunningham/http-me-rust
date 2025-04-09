@@ -263,19 +263,23 @@ fn status(req: &Request, mut resp: Response) -> Result<Response, Error> {
 }
 
 fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error> {
-    return match status_u16 {
-        status_int => {
-            // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
-            resp.set_status(status_int);
-            Ok(resp)
-        }
-        _ => {
-            resp.set_status(500);
-            let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
-            let _ = resp.set_body_json(&data);
-            Ok(resp)
-        }
-    };
+
+    resp.set_status(status_u16);
+    return Ok(resp);
+
+    // return match status_u16 {
+    //     status_int => {
+    //         // https://docs.rs/fastly/latest/fastly/http/struct.StatusCode.html
+    //         resp.set_status(status_int);
+    //         Ok(resp)
+    //     }
+    //     _ => {
+    //         resp.set_status(500);
+    //         let data = serde_json::json!({ "error": "unable to parse status code properly. Try sending request like /status/302"});
+    //         let _ = resp.set_body_json(&data);
+    //         Ok(resp)
+    //     }
+    // };
 }
 
 fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
