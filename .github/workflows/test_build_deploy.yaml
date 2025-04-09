@@ -70,8 +70,11 @@ jobs:
 
     - name: Setup Rust toolchain with caching
       uses: actions-rust-lang/setup-rust-toolchain@v1
-          
 
+    - name: Build (using cargo)
+      run: |
+        rustup target add wasm32-wasip1
+          
     - name: Deploy to Compute@Edge
       uses: fastly/compute-actions@v11
       env:
@@ -79,6 +82,7 @@ jobs:
       with:
         service_id:  ${{ secrets.FASTLY_SERVICE_ID }} # optional, defaults to value in fastly.toml
         comment: 'Deployed via GitHub Actions' # optional
+        
     - name: Update KV Store
       env:
         FASTLY_API_TOKEN: ${{ secrets.FASTLY_API_TOKEN }}
