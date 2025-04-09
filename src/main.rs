@@ -221,13 +221,13 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
 }
 
 fn status(req: &Request, mut resp: Response) -> Result<Response, Error> {
-    let mut status_str = "";
-    let mut status_parsed = 200;
+    // let mut status_str = "";
+    // let mut status_parsed = 200;
 
     match req.get_header_str("endpoint") {
         Some(ep) if ep.contains("status") => {
-            status_str = ep.split("=").collect::<Vec<&str>>()[1];
-            status_parsed = status_str.parse::<u16>()?;
+            let status_str = ep.split("=").collect::<Vec<&str>>()[1];
+            let status_parsed = status_str.parse::<u16>().unwrap_or(200);
             return status_result(status_parsed, resp);
         }
         _ => (),
@@ -235,7 +235,7 @@ fn status(req: &Request, mut resp: Response) -> Result<Response, Error> {
 
     match req.get_query_parameter("status") {
         Some(ep) => {
-            status_parsed = ep.parse::<u16>()?;
+            let status_parsed = ep.parse::<u16>().unwrap_or(200);
             return status_result(status_parsed, resp);
         }
         _ => (),
@@ -256,8 +256,8 @@ fn status(req: &Request, mut resp: Response) -> Result<Response, Error> {
         return Ok(resp);
     }
 
-    status_str = path_segments[1];
-    status_parsed = status_str.parse::<u16>()?;
+    let status_str = path_segments[1];
+    let status_parsed = status_str.parse::<u16>().unwrap_or(200);
 
     return status_result(status_parsed, resp);
 }
