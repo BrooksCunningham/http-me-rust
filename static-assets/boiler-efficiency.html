@@ -1,0 +1,788 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boiler Efficiency Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for preformatted output to mimic console/pdf */
+        .output-page pre {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre; /* Preserve whitespace and newlines */
+            line-height: 1.2;
+            font-size: 0.8rem; /* Slightly smaller for dense text */
+            overflow-x: auto; /* Allow horizontal scroll if content is too wide */
+            background-color: #f9fafb; /* Light gray background for output */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: #374151; /* Gray-700 */
+        }
+        .input-group input[type="number"], .input-group input[type="text"] {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db; /* Gray-300 */
+            border-radius: 0.375rem; /* Rounded-md */
+            box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .input-group input[type="number"]:focus, .input-group input[type="text"]:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            border-color: #2563eb; /* Blue-600 */
+            box-shadow: 0 0 0 3px rgb(59 130 246 / 0.5);
+        }
+        .calculate-button {
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .calculate-button:hover {
+            background-color: #1d4ed8; /* Blue-700 */
+        }
+        .output-container {
+            margin-top: 2rem;
+        }
+        .output-page h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 p-4 md:p-8">
+    <div class="max-w-6xl mx-auto bg-white p-6 md:p-8 rounded-lg shadow-xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-700">Boiler Efficiency Calculator</h1>
+            <p class="text-gray-500">Translates the BOILERE1 program to a web application.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="md:col-span-1">
+                <h2 class="text-xl font-semibold mb-4 text-gray-600 border-b pb-2">General Information</h2>
+                <div class="input-group">
+                    <label for="factoryName">Factory Name:</label>
+                    <input type="text" id="factoryName" value="ST. MARY">
+                </div>
+                <div class="input-group">
+                    <label for="boilerId">Boiler Identification:</label>
+                    <input type="text" id="boilerId" value="EXAMPLE">
+                </div>
+                <div class="input-group">
+                    <label for="date">Date:</label>
+                    <input type="text" id="date" value="5/13/2025">
+                </div>
+                <div class="input-group">
+                    <label for="runNumber">Run Number:</label>
+                    <input type="text" id="runNumber" value="1">
+                </div>
+                 <div class="input-group">
+                    <label for="comments">Comments:</label>
+                    <input type="text" id="comments" value="EXAMPLE FOR CODY">
+                </div>
+
+                <h2 class="text-xl font-semibold mb-4 mt-6 text-gray-600 border-b pb-2">Fuel & Combustion</h2>
+                 <div class="input-group">
+                    <label for="moistureBagasse">Moisture % Bagasse:</label>
+                    <input type="number" id="moistureBagasse" value="48.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="ashBagasse">Ash % Bagasse:</label>
+                    <input type="number" id="ashBagasse" value="4.00" step="0.01">
+                </div>
+                 <div class="input-group">
+                    <label for="oxygenDryFlue">% Oxygen in Dry Flue Gases:</label>
+                    <input type="number" id="oxygenDryFlue" value="9.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="coPPM">PPM CO in Dry Flue Gases:</label>
+                    <input type="number" id="coPPM" value="100.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="noxPPM">PPM NOx in Dry Flue Gases (as NO):</label>
+                    <input type="number" id="noxPPM" value="100.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="so2PPM">PPM SO2 in Dry Flue Gases:</label>
+                    <input type="number" id="so2PPM" value="0.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="vocPPM">PPM VOC in Dry Flue Gases:</label>
+                    <input type="number" id="vocPPM" value="0.00" step="0.01">
+                </div>
+            </div>
+
+            <div class="md:col-span-1">
+                <h2 class="text-xl font-semibold mb-4 text-gray-600 border-b pb-2">Steam & Water Conditions</h2>
+                <div class="input-group">
+                    <label for="steamFlow">Steam Flow from Boiler (lb/hr):</label>
+                    <input type="number" id="steamFlow" value="100000.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="steamPressure">Steam Pressure at Boiler (PSIG):</label>
+                    <input type="number" id="steamPressure" value="225.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="steamSuperheat">Steam Superheat (deg. F):</label>
+                    <input type="number" id="steamSuperheat" value="0.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="liveSteamEnthalpy">Live Steam Enthalpy (Btu/lb):</label>
+                    <input type="number" id="liveSteamEnthalpy" value="1200.90" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="feedWaterTemp">Boiler Feed Water Temp (deg. F):</label>
+                    <input type="number" id="feedWaterTemp" value="250.00" step="0.01">
+                </div>
+                 <div class="input-group">
+                    <label for="assumedLosses">Assumed Heat Losses from Boiler (1-3%):</label>
+                    <input type="number" id="assumedLosses" value="3.00" step="0.01">
+                </div>
+            </div>
+
+            <div class="md:col-span-1">
+                 <h2 class="text-xl font-semibold mb-4 text-gray-600 border-b pb-2">Air & Air Preheater</h2>
+                <div class="input-group">
+                    <label for="inletAirTemp">Inlet Air Temp to APH (deg. F):</label>
+                    <input type="number" id="inletAirTemp" value="80.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="relativeHumidity">Inlet Air Humidity to APH (%):</label>
+                    <input type="number" id="relativeHumidity" value="80.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="preheatedAirTemp">Preheated Air Temp out of APH (deg. F):</label>
+                    <input type="number" id="preheatedAirTemp" value="450.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="flueGasTempOutAPH">Flue Gas Temp out of APH (deg. F):</label>
+                    <input type="number" id="flueGasTempOutAPH" value="425.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="aphSurface">APH Heating Surface (sq. ft.):</label>
+                    <input type="number" id="aphSurface" value="15000.00" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="aphGasFlowArea">APH Gas Flow Cross Section (sq. ft.):</label>
+                    <input type="number" id="aphGasFlowArea" value="40.00" step="0.01">
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-8">
+            <button id="calculateButton" class="calculate-button">Calculate Boiler Efficiency</button>
+        </div>
+
+        <div class="output-container">
+            <div id="errorMessages" class="mb-4 text-red-600 font-semibold"></div>
+            <div class="output-page mb-6">
+                <h3 id="outputTitlePage1"></h3>
+                <pre id="outputPage1"></pre>
+            </div>
+            <div class="output-page mb-6">
+                 <h3 id="outputTitlePage2"></h3>
+                <pre id="outputPage2"></pre>
+            </div>
+            <div class="output-page">
+                 <h3 id="outputTitlePage3"></h3>
+                <pre id="outputPage3"></pre>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-sm text-gray-500">
+            <p>&copy; 2024 Boiler Efficiency Calculator. Based on BOILERE1 Program.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Utility Functions ---
+        function calculateMolalSpecificHeat(T, B0, B1, B2, B3, B4) {
+            return B0 + B1 * T + B2 * T**2 + B3 * T**3 + B4 * T**4;
+        }
+
+        function formatString(label, value, labelWidth = 15, valueWidth = 65) {
+            const l = String(label).padEnd(labelWidth);
+            const v = String(value).padEnd(valueWidth);
+            return `${l} ${v}`;
+        }
+        
+        // More sophisticated number formatting to match PDF (commas, decimals)
+        function formatNum(value, integerDigits, decimalDigits, totalWidth = 0, withCommas = true) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return ''.padStart(totalWidth);
+            }
+            let numStr;
+            if (withCommas) {
+                numStr = value.toLocaleString(undefined, {
+                    minimumFractionDigits: decimalDigits,
+                    maximumFractionDigits: decimalDigits
+                });
+            } else {
+                numStr = value.toFixed(decimalDigits);
+            }
+            
+            if (totalWidth > 0) {
+                return numStr.padStart(totalWidth);
+            }
+            return numStr;
+        }
+        
+        function centerText(text, totalWidth) {
+            const textLength = text.length;
+            if (textLength >= totalWidth) {
+                return text;
+            }
+            const padding = Math.floor((totalWidth - textLength) / 2);
+            return ' '.repeat(padding) + text + ' '.repeat(totalWidth - textLength - padding);
+        }
+
+
+        // --- Matrix Operations ---
+        function invert3x3Matrix(matrix) {
+            const m = matrix; // Assuming matrix is [[a,b,c],[d,e,f],[g,h,i]]
+            const det = m[0][0]*(m[1][1]*m[2][2] - m[2][1]*m[1][2]) -
+                        m[0][1]*(m[1][0]*m[2][2] - m[1][2]*m[2][0]) +
+                        m[0][2]*(m[1][0]*m[2][1] - m[1][1]*m[2][0]);
+
+            if (Math.abs(det) < 1e-9) { // Check for singularity
+                return null; // Or throw an error
+            }
+
+            const invDet = 1.0 / det;
+            const inv = [
+                [(m[1][1]*m[2][2] - m[2][1]*m[1][2])*invDet, (m[0][2]*m[2][1] - m[0][1]*m[2][2])*invDet, (m[0][1]*m[1][2] - m[0][2]*m[1][1])*invDet],
+                [(m[1][2]*m[2][0] - m[1][0]*m[2][2])*invDet, (m[0][0]*m[2][2] - m[0][2]*m[2][0])*invDet, (m[1][0]*m[0][2] - m[0][0]*m[1][2])*invDet],
+                [(m[1][0]*m[2][1] - m[2][0]*m[1][1])*invDet, (m[2][0]*m[0][1] - m[0][0]*m[2][1])*invDet, (m[0][0]*m[1][1] - m[1][0]*m[0][1])*invDet]
+            ];
+            return inv;
+        }
+
+        function multiplyMatrixVector(matrix, vector) { // 3x3 matrix, 3x1 vector
+            const result = [0, 0, 0];
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    result[i] += matrix[i][j] * vector[j];
+                }
+            }
+            return result;
+        }
+
+        // --- Main Calculation Logic ---
+        document.getElementById('calculateButton').addEventListener('click', function() {
+            // Clear previous outputs and errors
+            document.getElementById('outputPage1').textContent = '';
+            document.getElementById('outputPage2').textContent = '';
+            document.getElementById('outputPage3').textContent = '';
+            document.getElementById('outputTitlePage1').textContent = '';
+            document.getElementById('outputTitlePage2').textContent = '';
+            document.getElementById('outputTitlePage3').textContent = '';
+            document.getElementById('errorMessages').textContent = '';
+            let errorOccurred = false;
+
+            function displayError(message) {
+                document.getElementById('errorMessages').textContent += message + '\n';
+                errorOccurred = true;
+            }
+
+            // --- Constants ---
+            const D1 = 48.205; // CARBON %
+            const D2 = 6.667;  // HYDROGEN %
+            const D3 = 45.128; // OXYGEN %
+            const D4 = 8350.0; // HEATING VALUE
+
+            // --- Get Inputs ---
+            const A1_factory_name = document.getElementById('factoryName').value || "N/A";
+            const A2_boiler_id = document.getElementById('boilerId').value || "N/A";
+            const A3_date = document.getElementById('date').value || "N/A";
+            const A4_run_number = document.getElementById('runNumber').value || "N/A";
+            const A5_comments = document.getElementById('comments').value || "";
+
+            const S1 = parseFloat(document.getElementById('steamFlow').value);
+            const S2 = parseFloat(document.getElementById('steamPressure').value);
+            const S3 = parseFloat(document.getElementById('steamSuperheat').value);
+            const R5_live_steam_enthalpy = parseFloat(document.getElementById('liveSteamEnthalpy').value);
+            const S4_feed_water_temp = parseFloat(document.getElementById('feedWaterTemp').value);
+            const S5_aph_surface = parseFloat(document.getElementById('aphSurface').value);
+            const S6_assumed_losses = parseFloat(document.getElementById('assumedLosses').value);
+            const M_moisture_bagasse = parseFloat(document.getElementById('moistureBagasse').value);
+            const A_ash_bagasse = parseFloat(document.getElementById('ashBagasse').value);
+            const T1_inlet_air_temp = parseFloat(document.getElementById('inletAirTemp').value);
+            const H_relative_humidity = parseFloat(document.getElementById('relativeHumidity').value);
+            const T2_preheated_air_temp = parseFloat(document.getElementById('preheatedAirTemp').value);
+            const T4_flue_gas_temp_out_aph = parseFloat(document.getElementById('flueGasTempOutAPH').value);
+            const P_oxygen_dry_flue = parseFloat(document.getElementById('oxygenDryFlue').value);
+            const Q1_co_ppm = parseFloat(document.getElementById('coPPM').value);
+            const R1_nox_ppm = parseFloat(document.getElementById('noxPPM').value);
+            const R2_so2_ppm = parseFloat(document.getElementById('so2PPM').value);
+            const W2_voc_ppm = parseFloat(document.getElementById('vocPPM').value);
+            const A1_aph_gas_flow_area = parseFloat(document.getElementById('aphGasFlowArea').value);
+
+            // Basic input validation
+            const inputs = {S1, S2, S3, R5_live_steam_enthalpy, S4_feed_water_temp, S5_aph_surface, S6_assumed_losses, M_moisture_bagasse, A_ash_bagasse, T1_inlet_air_temp, H_relative_humidity, T2_preheated_air_temp, T4_flue_gas_temp_out_aph, P_oxygen_dry_flue, Q1_co_ppm, R1_nox_ppm, R2_so2_ppm, W2_voc_ppm, A1_aph_gas_flow_area};
+            for (const key in inputs) {
+                if (isNaN(inputs[key])) {
+                    displayError(`Invalid input for ${key}. Please enter a number.`);
+                    return; // Stop calculation
+                }
+            }
+
+
+            const S7_live_steam_enthalpy_calc = R5_live_steam_enthalpy;
+
+            const Q_co_fraction = Q1_co_ppm / 10000.0;
+            const R_no_fraction = R1_nox_ppm / 10000.0;
+
+            // --- Simultaneous Equation Coefficients ---
+            const Z1_coeff = P_oxygen_dry_flue * 0.232 / 100 / 32 + P_oxygen_dry_flue * 0.768 / 100 / 28 - 0.232 / 32;
+            const Z2_coeff = -P_oxygen_dry_flue / 12 / 100 + 16 * P_oxygen_dry_flue / 12 / 32 / 100 + 1 / 12 - 16 / (12 * 32);
+            const Z3_coeff = -16 * P_oxygen_dry_flue / 100 / 14 / 32 + P_oxygen_dry_flue / 14 / 100 - P_oxygen_dry_flue / 28 / 100 + 16 / (14 * 32);
+            
+            const Z4_coeff = Q_co_fraction * 0.232 / 100 / 32 + Q_co_fraction * 0.768 / 100 / 28;
+            const Z5_coeff = -Q_co_fraction / 12 / 100 + 16 * Q_co_fraction / 100 / 12 / 32 + 1 / 12;
+            const Z6_coeff = -16 * Q_co_fraction / 14 / 32 / 100 + Q_co_fraction / 14 / 100 - Q_co_fraction / 28 / 100;
+            
+            const Z7_coeff = R_no_fraction * 0.232 / 100 / 32 + 0.768 * R_no_fraction / 28 / 100;
+            const Z8_coeff = -R_no_fraction / 100 / 12 + R_no_fraction * 16 / 100 / 12 / 32;
+            const Z9_coeff = -R_no_fraction * 16 / 100 / 14 / 32 + R_no_fraction / 100 / 14 - R_no_fraction / 28 / 100 - 1 / 14;
+            
+            const Y1_const = -P_oxygen_dry_flue * D1 / 100 / 12 + D3 * (1 - P_oxygen_dry_flue / 100) / 32 +
+                             D1 * 16 * (P_oxygen_dry_flue / 100 - 1) / 12 / 32 + D2 * 16 * (P_oxygen_dry_flue / 100 - 1) / 2 / 32;
+            const Y2_const = -Q_co_fraction * D1 / 100 / 12 - Q_co_fraction * D3 / 100 / 32 +
+                             Q_co_fraction * D1 * 16 / 100 / 12 / 32 + Q_co_fraction * D2 * 16 / 100 / 2 / 32 + D1 / 12;
+            const Y3_const = -R_no_fraction * D1 / 100 / 12 - R_no_fraction * D3 / 100 / 32 +
+                             R_no_fraction * D1 * 16 / 100 / 12 / 32 + R_no_fraction * D2 * 16 / 100 / 2 / 32;
+
+            const C_matrix = [
+                [Z1_coeff, Z2_coeff, Z3_coeff],
+                [Z4_coeff, Z5_coeff, Z6_coeff],
+                [Z7_coeff, Z8_coeff, Z9_coeff]
+            ];
+            const B_vector = [Y1_const, Y2_const, Y3_const];
+
+            const inv_C_matrix = invert3x3Matrix(C_matrix);
+            if (!inv_C_matrix) {
+                displayError("Error: Matrix is singular, cannot solve simultaneous equations. Check input values (especially O2, CO, NOx).");
+                return;
+            }
+            const X_solution_vector = multiplyMatrixVector(inv_C_matrix, B_vector);
+
+            const X_lbs_dry_air = X_solution_vector[0];
+            const Y_lbs_C_to_CO2 = X_solution_vector[1];
+            const Z_lbs_N2_to_NO = X_solution_vector[2];
+
+            // --- Lbs of Combustion Gases ---
+            const O2_in_dry_air = X_lbs_dry_air * 0.232;
+            const N2_in_dry_air = X_lbs_dry_air * 0.768;
+
+            const P1_CO2 = Y_lbs_C_to_CO2 * 44 / 12;
+            const P2_CO = (D1 - Y_lbs_C_to_CO2) * 28 / 12;
+            const P3_NO = Z_lbs_N2_to_NO * 30 / 14;
+            const P4_O2 = O2_in_dry_air + D3 - Y_lbs_C_to_CO2 * 32 / 12 -
+                          (D1 - Y_lbs_C_to_CO2) * 16 / 12 - Z_lbs_N2_to_NO * 16 / 14 - D2 * 16 / 2;
+            const P5_N2 = N2_in_dry_air - Z_lbs_N2_to_NO;
+            const P6_H2O_combustion = D2 * 18 / 2;
+            
+            const bagasse_denom = (100 - A_ash_bagasse - M_moisture_bagasse);
+            if (Math.abs(bagasse_denom) < 1e-6) {
+                displayError("Error: Sum of Ash and Moisture % Bagasse cannot be 100%.");
+                return;
+            }
+            const B_total_bagasse_for_100_DAF = 100 * 100 / bagasse_denom;
+            const P7_H2O_in_bagasse = B_total_bagasse_for_100_DAF * M_moisture_bagasse / 100;
+            
+            // --- Water in Air ---
+            let H1_water_per_lb_dry_air_sat;
+            if (T1_inlet_air_temp > 200) {
+                displayError("INLET AIR TEMPERATURE ABOVE 200 DEG. F (OUT OF RANGE)"); return;
+            } else if (T1_inlet_air_temp <= 90) {
+                H1_water_per_lb_dry_air_sat = 0.000874666561 + 0.000020125603 * T1_inlet_air_temp +
+                                              2.55146562E-6 * T1_inlet_air_temp**2 -
+                                              2.40747862E-8 * T1_inlet_air_temp**3 +
+                                              3.86800701E-10 * T1_inlet_air_temp**4;
+            } else if (T1_inlet_air_temp <= 130) {
+                H1_water_per_lb_dry_air_sat = -0.208469990707 + 0.0068386665 * T1_inlet_air_temp -
+                                              0.000075049999 * T1_inlet_air_temp**2 +
+                                              3.18333331E-7 * T1_inlet_air_temp**3;
+            } else { // T1_inlet_air_temp <= 200
+                H1_water_per_lb_dry_air_sat = -904.841207678 + 29.27295 * T1_inlet_air_temp -
+                                              0.3775272 * T1_inlet_air_temp**2 +
+                                              0.002426797 * T1_inlet_air_temp**3 -
+                                              0.000007777666 * T1_inlet_air_temp**4 +
+                                              9.94852000E-9 * T1_inlet_air_temp**5;
+            }
+            const H2_actual_water_per_lb_dry_air = H1_water_per_lb_dry_air_sat * H_relative_humidity / 100;
+            const P8_H2O_in_air = X_lbs_dry_air * H2_actual_water_per_lb_dry_air;
+
+            // --- Heat Released on Combustion (C) ---
+            const heat_loss_incomplete_comb_CO = (D1 - Y_lbs_C_to_CO2) * 10135.1;
+            const water_vapor_heat_term = (P6_H2O_combustion + P7_H2O_in_bagasse) * (1070.9 - (T1_inlet_air_temp - 40) * 0.5675);
+            const C_heat_released = 100 * D4 - heat_loss_incomplete_comb_CO - water_vapor_heat_term;
+
+            // --- STACK GAS ANALYSIS (100 lb DAF Bagasse) ---
+            const P_analysis = Array(9).fill(null).map(() => Array(8).fill(0));
+            const P_component_names = [
+                "Carbon Dioxide", "Carbon Monoxide", "Nitric Oxide", "Oxygen", "Nitrogen",
+                "Water of Combustion", "Water in Bagasse", "Water in Air", "Total"
+            ];
+
+            P_analysis[0][0] = P1_CO2; P_analysis[1][0] = P2_CO; P_analysis[2][0] = P3_NO;
+            P_analysis[3][0] = P4_O2;  P_analysis[4][0] = P5_N2; P_analysis[5][0] = P6_H2O_combustion;
+            P_analysis[6][0] = P7_H2O_in_bagasse; P_analysis[7][0] = P8_H2O_in_air;
+
+            P_analysis[0][5] = 44.0; P_analysis[1][5] = 28.0; P_analysis[2][5] = 30.0;
+            P_analysis[3][5] = 32.0; P_analysis[4][5] = 28.0; P_analysis[5][5] = 18.0;
+            P_analysis[6][5] = 18.0; P_analysis[7][5] = 18.0;
+
+            for (let i = 0; i < 8; i++) {
+                if (P_analysis[i][5] !== 0) P_analysis[i][1] = P_analysis[i][0] / P_analysis[i][5];
+            }
+
+            let total_dry_moles_for_ppm_calc = 0;
+            for (let i = 0; i < 5; i++) total_dry_moles_for_ppm_calc += P_analysis[i][1];
+            if (total_dry_moles_for_ppm_calc === 0) total_dry_moles_for_ppm_calc = 1e-9;
+            
+            const R3_SO2_moles = R2_so2_ppm * total_dry_moles_for_ppm_calc / 1000000.0;
+            const R4_SO2_lbs = R3_SO2_moles * 64.0;
+            const W3_VOC_moles = W2_voc_ppm * total_dry_moles_for_ppm_calc / 1000000.0;
+            const W4_VOC_lbs_as_CH4 = W3_VOC_moles * 16.0;
+
+            const temp_diff_P_table = T4_flue_gas_temp_out_aph - T1_inlet_air_temp;
+            for (let i = 0; i < 8; i++) P_analysis[i][3] = temp_diff_P_table;
+
+            const T_for_Cp_P_table = T4_flue_gas_temp_out_aph;
+            P_analysis[0][2] = calculateMolalSpecificHeat(T_for_Cp_P_table, 8.662768808515, 0.0029821577147, -9.16288392E-7, 1.66998526E-10, -1.32316049E-14); //CO2
+            P_analysis[1][2] = calculateMolalSpecificHeat(T_for_Cp_P_table, 6.951182636762, 0.0000808081517, 3.01692378E-7, -1.05930043E-10, 1.09966077E-14); //CO
+            P_analysis[2][2] = calculateMolalSpecificHeat(T_for_Cp_P_table, 7.122349487607, 0.0000939566571, 3.04296002E-7, -1.10185684E-10, 1.16096792E-14); //NO
+            P_analysis[3][2] = calculateMolalSpecificHeat(T_for_Cp_P_table, 6.955593537838, 0.0006110843706, 1.97256425E-8, -4.42793203E-11, 6.33390329E-15); //O2
+            P_analysis[4][2] = calculateMolalSpecificHeat(T_for_Cp_P_table, 6.955458834414, 0.0000017042737, 3.19710501E-7, -1.04701709E-10, 1.04940056E-14); //N2
+            const Cp_H2O_P = calculateMolalSpecificHeat(T_for_Cp_P_table, 7.993663783892, 0.000300684918, 4.04862076E-7, -1.30505019E-10, 1.29129087E-14); //Water
+            [5,6,7].forEach(i => P_analysis[i][2] = Cp_H2O_P);
+            
+            for (let i = 0; i < 8; i++) P_analysis[i][4] = P_analysis[i][1] * P_analysis[i][2] * P_analysis[i][3];
+
+            [0,1,4].forEach(j => { P_analysis[8][j] = 0; for(let i=0; i<8; i++) P_analysis[8][j] += P_analysis[i][j]; });
+
+            const total_lb_moles_wet_P_table = P_analysis[8][1];
+            let total_lb_moles_dry_P_table = 0;
+            for(let i=0; i<5; i++) total_lb_moles_dry_P_table += P_analysis[i][1];
+
+            if (total_lb_moles_wet_P_table > 1e-9) {
+                for (let i = 0; i < 8; i++) P_analysis[i][6] = (P_analysis[i][1] / total_lb_moles_wet_P_table) * 100;
+            }
+            if (total_lb_moles_dry_P_table > 1e-9) {
+                for (let i = 0; i < 5; i++) P_analysis[i][7] = (P_analysis[i][1] / total_lb_moles_dry_P_table) * 100;
+            }
+            P_analysis[8][6] = 0; for(let i=0; i<8; i++) P_analysis[8][6] += P_analysis[i][6];
+            P_analysis[8][7] = 0; for(let i=0; i<5; i++) P_analysis[8][7] += P_analysis[i][7];
+
+            // --- Theoretical Boiler Efficiency (E) and Excess Air (E1) ---
+            const E_theoretical_max_boiler_eff = (Math.abs(100 * D4) < 1e-9) ? 0 : (C_heat_released - P_analysis[8][4]) / (100 * D4) * 100;
+            const G_theoretical_dry_air = (D1 * 32 / 12 + D2 * 16 / 2 - D3) / 0.232;
+            const E1_excess_air_percent = (Math.abs(G_theoretical_dry_air) < 1e-9) ? 0 : (X_lbs_dry_air - G_theoretical_dry_air) / G_theoretical_dry_air * 100;
+            
+            // --- Heat absorbed by combustion air in air preheater (Q_air_analysis) ---
+            const Q_air_analysis = Array(4).fill(null).map(() => Array(6).fill(0));
+            Q_air_analysis[0][0] = N2_in_dry_air; Q_air_analysis[1][0] = O2_in_dry_air; Q_air_analysis[2][0] = P8_H2O_in_air;
+            Q_air_analysis[0][5] = 28.0; Q_air_analysis[1][5] = 32.0; Q_air_analysis[2][5] = 18.0;
+            for (let i = 0; i < 3; i++) if (Q_air_analysis[i][5] !== 0) Q_air_analysis[i][1] = Q_air_analysis[i][0] / Q_air_analysis[i][5];
+            
+            const T_for_Cp_Q_table = T2_preheated_air_temp;
+            Q_air_analysis[0][2] = calculateMolalSpecificHeat(T_for_Cp_Q_table, 6.955458834414, 0.0000017042737, 3.19710501E-7, -1.04701709E-10, 1.04940056E-14); //N2
+            Q_air_analysis[1][2] = calculateMolalSpecificHeat(T_for_Cp_Q_table, 6.955593537838, 0.0006110843706, 1.97256425E-8, -4.42793203E-11, 6.33390329E-15); //O2
+            Q_air_analysis[2][2] = calculateMolalSpecificHeat(T_for_Cp_Q_table, 7.993663783892, 0.000300684918, 4.04862076E-7, -1.30505019E-10, 1.29129087E-14); //Water
+
+            const temp_diff_Q_table = T2_preheated_air_temp - T1_inlet_air_temp;
+            for (let i = 0; i < 3; i++) Q_air_analysis[i][3] = temp_diff_Q_table;
+            for (let i = 0; i < 3; i++) Q_air_analysis[i][4] = Q_air_analysis[i][1] * Q_air_analysis[i][2] * Q_air_analysis[i][3];
+            [0,1,4].forEach(j => { Q_air_analysis[3][j] = 0; for(let i=0; i<3; i++) Q_air_analysis[3][j] += Q_air_analysis[i][j]; });
+
+            // --- Trial and Error for T3 & T5 ---
+            const R_flue_gas_analysis = Array(9).fill(null).map(() => Array(6).fill(0));
+            for (let i = 0; i < 8; i++) { R_flue_gas_analysis[i][0] = P_analysis[i][0]; R_flue_gas_analysis[i][1] = P_analysis[i][1]; }
+
+            let T_iter = T4_flue_gas_temp_out_aph - 0.5;
+            let F_flag_T3_found = 0;
+            let T3_calc_boiler_outlet_temp = 0.0;
+            let T5_theoretical_max_furnace_temp = 0.0;
+            const max_iterations_temp = 10000; let current_iteration_temp = 0;
+
+            while(current_iteration_temp < max_iterations_temp) {
+                T_iter += 0.5; current_iteration_temp++;
+                R_flue_gas_analysis[0][2] = calculateMolalSpecificHeat(T_iter, 8.662768808515, 0.0029821577147, -9.16288392E-7, 1.66998526E-10, -1.32316049E-14);
+                R_flue_gas_analysis[1][2] = calculateMolalSpecificHeat(T_iter, 6.951182636762, 0.0000808081517, 3.01692378E-7, -1.05930043E-10, 1.09966077E-14);
+                R_flue_gas_analysis[2][2] = calculateMolalSpecificHeat(T_iter, 7.122349487607, 0.0000939566571, 3.04296002E-7, -1.10185684E-10, 1.16096792E-14);
+                R_flue_gas_analysis[3][2] = calculateMolalSpecificHeat(T_iter, 6.955593537838, 0.0006110843706, 1.97256425E-8, -4.42793203E-11, 6.33390329E-15);
+                R_flue_gas_analysis[4][2] = calculateMolalSpecificHeat(T_iter, 6.955458834414, 0.0000017042737, 3.19710501E-7, -1.04701709E-10, 1.04940056E-14);
+                const Cp_H2O_R = calculateMolalSpecificHeat(T_iter, 7.993663783892, 0.000300684918, 4.04862076E-7, -1.30505019E-10, 1.29129087E-14);
+                [5,6,7].forEach(i => R_flue_gas_analysis[i][2] = Cp_H2O_R);
+
+                const temp_diff_R_table = T_iter - T1_inlet_air_temp;
+                for (let i = 0; i < 8; i++) R_flue_gas_analysis[i][3] = temp_diff_R_table;
+                for (let i = 0; i < 8; i++) R_flue_gas_analysis[i][4] = R_flue_gas_analysis[i][1] * R_flue_gas_analysis[i][2] * R_flue_gas_analysis[i][3];
+                R_flue_gas_analysis[8][4] = 0; for(let i=0; i<8; i++) R_flue_gas_analysis[8][4] += R_flue_gas_analysis[i][4];
+
+                if (F_flag_T3_found === 0 && R_flue_gas_analysis[8][4] >= (P_analysis[8][4] + Q_air_analysis[3][4])) {
+                    T3_calc_boiler_outlet_temp = T_iter; F_flag_T3_found = 1;
+                }
+                if (R_flue_gas_analysis[8][4] >= (C_heat_released + Q_air_analysis[3][4])) {
+                    T5_theoretical_max_furnace_temp = T_iter;
+                    if (F_flag_T3_found === 1) break;
+                }
+                if (T_iter > 4500) { displayError("Warning: T3/T5 iteration exceeded 4500F."); if(F_flag_T3_found === 0) T3_calc_boiler_outlet_temp = T_iter; if(T5_theoretical_max_furnace_temp === 0) T5_theoretical_max_furnace_temp = T_iter; break; }
+            }
+            if (current_iteration_temp >= max_iterations_temp) { displayError("Warning: Max iterations for T3/T5."); if(F_flag_T3_found === 0) T3_calc_boiler_outlet_temp = T_iter; if(T5_theoretical_max_furnace_temp === 0) T5_theoretical_max_furnace_temp = T_iter;}
+
+            // --- Further Calculations ---
+            let S7_heat_to_steam_btu_hr;
+            if (R5_live_steam_enthalpy > 0) {
+                const h_feedwater = S4_feed_water_temp - 32.0;
+                S7_heat_to_steam_btu_hr = S1 * (S7_live_steam_enthalpy_calc - h_feedwater);
+            } else {
+                const h_steam_calc = (1158.13 + 0.5439531818 * S2 - 0.003075257085 * S2**2 +
+                                      9.66408644E-6 * S2**3 - 1.54910405E-8 * S2**4 +
+                                      9.71608424E-12 * S2**5 + 0.5 * S3);
+                const h_feedwater = S4_feed_water_temp - 32.0;
+                S7_heat_to_steam_btu_hr = S1 * (h_steam_calc - h_feedwater);
+            }
+
+            const W_lbs_wet_bagasse_for_100_DAF = B_total_bagasse_for_100_DAF;
+            const actual_boiler_eff_used = E_theoretical_max_boiler_eff - S6_assumed_losses;
+            const S8_heat_transferred_to_steam_per_lb_wet_bagasse = (Math.abs(W_lbs_wet_bagasse_for_100_DAF) < 1e-9) ? 0 : D4 * 100.0 / W_lbs_wet_bagasse_for_100_DAF * (actual_boiler_eff_used / 100.0);
+            const S9_lbs_as_fired_bagasse_required = (Math.abs(S8_heat_transferred_to_steam_per_lb_wet_bagasse) < 1e-9) ? 0 : S7_heat_to_steam_btu_hr / S8_heat_transferred_to_steam_per_lb_wet_bagasse;
+            const gross_cal_val_as_fired = D4 * ((100.0 - (M_moisture_bagasse + A_ash_bagasse)) / 100.0);
+            const S10_heat_input_as_fired_btu_hr = S9_lbs_as_fired_bagasse_required * gross_cal_val_as_fired;
+            const F1_factor_actual_to_basis_bagasse_wt = (Math.abs(W_lbs_wet_bagasse_for_100_DAF) < 1e-9) ? 0 : S9_lbs_as_fired_bagasse_required / W_lbs_wet_bagasse_for_100_DAF;
+
+            // --- Gas Volumes ---
+            const V1_vol_comb_air_SCFM = Q_air_analysis[3][1] * F1_factor_actual_to_basis_bagasse_wt * 385.5 / 60.0;
+            const V0_vol_comb_air_to_APH_ACFM = V1_vol_comb_air_SCFM * (460 + T1_inlet_air_temp) / (460 + 68);
+            const V2_vol_comb_air_out_APH_ACFM = V1_vol_comb_air_SCFM * (460 + T2_preheated_air_temp) / (460 + 68);
+            const V5_vol_flue_gas_SCFM = P_analysis[8][1] * F1_factor_actual_to_basis_bagasse_wt * 385.5 / 60.0;
+            const dry_gas_mole_fraction = (total_lb_moles_wet_P_table > 1e-9) ? total_lb_moles_dry_P_table / total_lb_moles_wet_P_table : 0;
+            const V5_vol_flue_gas_DSCFM = V5_vol_flue_gas_SCFM * dry_gas_mole_fraction;
+            const V3_vol_flue_gas_boiler_outlet_ACFM = V5_vol_flue_gas_SCFM * (460 + T3_calc_boiler_outlet_temp) / (460 + 68);
+            const V4_vol_flue_gas_APH_outlet_ACFM = V5_vol_flue_gas_SCFM * (460 + T4_flue_gas_temp_out_aph) / (460 + 68);
+
+            // --- U_ohtc_aph ---
+            const Q_aph_total_btu_hr = F1_factor_actual_to_basis_bagasse_wt * Q_air_analysis[3][4];
+            const delta_T_hot_end = T3_calc_boiler_outlet_temp - T2_preheated_air_temp;
+            const delta_T_cold_end = T4_flue_gas_temp_out_aph - T1_inlet_air_temp;
+            let U_ohtc_aph = 0.0;
+            if (S5_aph_surface > 1e-9) {
+                if (Math.abs(delta_T_hot_end - delta_T_cold_end) < 1e-6) {
+                    if (delta_T_hot_end > 1e-6) {
+                        const lmtd = delta_T_hot_end;
+                        if (Math.abs(S5_aph_surface * lmtd) > 1e-9) U_ohtc_aph = Q_aph_total_btu_hr / (S5_aph_surface * lmtd);
+                    }
+                } else if (delta_T_hot_end > 1e-6 && delta_T_cold_end > 1e-6 && (delta_T_hot_end / delta_T_cold_end) > 0) {
+                    const lmtd = (delta_T_hot_end - delta_T_cold_end) / Math.log(delta_T_hot_end / delta_T_cold_end);
+                    if (Math.abs(S5_aph_surface * lmtd) > 1e-9) U_ohtc_aph = Q_aph_total_btu_hr / (S5_aph_surface * lmtd);
+                }
+            }
+            
+            // --- Emissions ---
+            const emissions_co_lb_hr = P_analysis[1][0] * F1_factor_actual_to_basis_bagasse_wt;
+            const emissions_nox_as_no2_lb_hr = P_analysis[2][0] * F1_factor_actual_to_basis_bagasse_wt * (46.0/30.0);
+            const emissions_so2_lb_hr = R4_SO2_lbs * F1_factor_actual_to_basis_bagasse_wt;
+            const emissions_voc_as_c3h8_lb_hr = W4_VOC_lbs_as_CH4 * F1_factor_actual_to_basis_bagasse_wt * (44.0/16.0);
+            const tons_bagasse_fired_hr = (S9_lbs_as_fired_bagasse_required > 1e-9) ? S9_lbs_as_fired_bagasse_required / 2000.0 : 0;
+            const emissions_co_lb_ton = (tons_bagasse_fired_hr > 1e-9) ? emissions_co_lb_hr / tons_bagasse_fired_hr : 0;
+            const emissions_nox_lb_ton = (tons_bagasse_fired_hr > 1e-9) ? emissions_nox_as_no2_lb_hr / tons_bagasse_fired_hr : 0;
+            const emissions_so2_lb_ton = (tons_bagasse_fired_hr > 1e-9) ? emissions_so2_lb_hr / tons_bagasse_fired_hr : 0;
+            const emissions_voc_lb_ton = (tons_bagasse_fired_hr > 1e-9) ? emissions_voc_as_c3h8_lb_hr / tons_bagasse_fired_hr : 0;
+            const heat_input_mmbtu_hr = S10_heat_input_as_fired_btu_hr / 1000000.0;
+            const emissions_co_lb_mmbtu = (heat_input_mmbtu_hr > 1e-9) ? emissions_co_lb_hr / heat_input_mmbtu_hr : 0;
+            const emissions_nox_lb_mmbtu = (heat_input_mmbtu_hr > 1e-9) ? emissions_nox_as_no2_lb_hr / heat_input_mmbtu_hr : 0;
+            const emissions_so2_lb_mmbtu = (heat_input_mmbtu_hr > 1e-9) ? emissions_so2_lb_hr / heat_input_mmbtu_hr : 0;
+            const emissions_voc_lb_mmbtu = (heat_input_mmbtu_hr > 1e-9) ? emissions_voc_as_c3h8_lb_hr / heat_input_mmbtu_hr : 0;
+
+            // --- Z_actual_analysis ---
+            const Z_actual_analysis = P_analysis.map(row => [...row]); // Deep copy
+            const scaling_factor_for_Z = F1_factor_actual_to_basis_bagasse_wt;
+            for (let i = 0; i < 9; i++) {
+                Z_actual_analysis[i][0] = P_analysis[i][0] * scaling_factor_for_Z;
+                Z_actual_analysis[i][1] = P_analysis[i][1] * scaling_factor_for_Z;
+                Z_actual_analysis[i][4] = P_analysis[i][4] * scaling_factor_for_Z;
+            }
+
+            if (errorOccurred) return; // Don't proceed to printing if errors happened
+
+            // --- Format and Display Output ---
+            let output1 = "";
+            output1 += centerText("BOILER EFFICIENCY CALCULATION", 120) + "Page 1 of 3\n";
+            output1 += "\n\n";
+            output1 += centerText(A1_factory_name, 80) + "\n";
+            output1 += "\n\n\n";
+            output1 += `${"Boiler Number:".padEnd(15)} ${A2_boiler_id}\n`;
+            output1 += `${"Date:".padEnd(15)} ${A3_date}\n`;
+            output1 += `${"Run Number:".padEnd(15)} ${A4_run_number}\n`;
+            output1 += "\n\n";
+            output1 += "Input Data\n";
+            output1 += "----------\n";
+            output1 += "Basis: 100 lbs Dry Ash-Free Bagasse\n";
+            
+            function addInputItem(label, value, unit = "") {
+                const valStr = typeof value === 'number' ? formatNum(value, 0, 2, 12) : String(value).padStart(12);
+                output1 += `${label.padEnd(55)} ${valStr} ${unit}\n`;
+            }
+            addInputItem("Moisture % Bagasse", M_moisture_bagasse);
+            addInputItem("Ash % Bagasse", A_ash_bagasse);
+            addInputItem("Inlet Ambient Air Temperature to Air Preheater, deg. F", T1_inlet_air_temp);
+            addInputItem("Inlet Relative Humidity in Air to Air Preheater", H_relative_humidity);
+            addInputItem("Preheated Air Temperature Leaving Air Preheater", T2_preheated_air_temp, "deg. F");
+            addInputItem("Flue Gas Temperature Out of Air Preheater, deg. F", T4_flue_gas_temp_out_aph);
+            addInputItem("% Oxygen in Dry Flue Gases", P_oxygen_dry_flue);
+            addInputItem("PPM Carbon Monoxide in Dry Flue Gases", Q1_co_ppm);
+            addInputItem("PPM Nitric Oxide in Dry Flue Gases", R1_nox_ppm);
+            addInputItem("PPM Sulfur Dioxide in Dry Flue Gases", R2_so2_ppm);
+            addInputItem("PPM Volatile Organic Compounds in Dry Flue Gases", W2_voc_ppm);
+            addInputItem("Steam Flow from Boiler, lb/hr", S1);
+            addInputItem("Boiler Pressure, PSIG", S2);
+            addInputItem("Steam Superheat, deg. F", S3);
+            addInputItem("Live Steam Enthalpy, Btu/lb", R5_live_steam_enthalpy);
+            addInputItem("Boiler Feed Water Temperature, deg. F", S4_feed_water_temp);
+            addInputItem("Air Preheater Heating Surface, sq. ft.", S5_aph_surface);
+            addInputItem("Assumed Heat Losses from Boiler (1-3%)", S6_assumed_losses);
+            addInputItem("Air Preheater Flue Gas Flow Area, Sq. Ft.", A1_aph_gas_flow_area);
+            output1 += "\n";
+            output1 += `Comments: ${A5_comments}\n`;
+            output1 += "\n\n";
+
+            output1 += centerText("STACK GAS ANALYSIS (Based on 100 lb Dry Ash-Free Bagasse)", 100) + "\n";
+            output1 += centerText("---------------------------------------------------------", 100) + "\n";
+            output1 += "\n";
+            const header1_P_str = `${"Component".padEnd(19)} ${"Lbs.".padStart(10)} ${"Lb. Moles".padStart(11)} ${"Molal Heat Capacity".padStart(20)} ${"Temp. Diff.".padStart(12)} ${"Heat Content, BTU".padStart(20)} ${"Wet Gas".padStart(10)} ${"Dry Gas".padStart(10)}\n`;
+            const header2_P_str = `${"".padEnd(19)} ${"".padStart(10)} ${"".padStart(11)} ${"BTU/lb mole-deg F".padStart(20)} ${"deg. F".padStart(12)} ${"".padStart(20)} ${"Vol %".padStart(10)} ${"Vol %".padStart(10)}\n`;
+            output1 += header1_P_str;
+            output1 += header2_P_str;
+            output1 += "-".repeat(header1_P_str.length -1) + "\n";
+            
+            for (let i = 0; i < 8; i++) {
+                const dryPctStr = (i < 5) ? formatNum(P_analysis[i][7],0,5,10,false) : "".padStart(10);
+                output1 += `${P_component_names[i].padEnd(19)} ${formatNum(P_analysis[i][0],0,3,10)} ${formatNum(P_analysis[i][1],0,5,11,false)} ${formatNum(P_analysis[i][2],0,4,10,false)} ${formatNum(P_analysis[i][3],0,2,12)} ${formatNum(P_analysis[i][4],0,3,20)} ${formatNum(P_analysis[i][6],0,5,10,false)} ${dryPctStr}\n`;
+            }
+            output1 += "-".repeat(header1_P_str.length -1) + "\n";
+            output1 += `${P_component_names[8].padEnd(19)} ${formatNum(P_analysis[8][0],0,3,10)} ${formatNum(P_analysis[8][1],0,5,11,false)} ${"".padStart(10)} ${"".padStart(12)} ${formatNum(P_analysis[8][4],0,3,20)} ${formatNum(P_analysis[8][6],0,5,10,false)} ${formatNum(P_analysis[8][7],0,5,10,false)}\n`;
+            output1 += "-".repeat(header1_P_str.length -1) + "\n";
+            document.getElementById('outputPage1').textContent = output1;
+            document.getElementById('outputTitlePage1').textContent = "Page 1: Input Data & Stack Gas Analysis (DAF Basis)";
+
+
+            let output2 = "";
+            output2 += centerText("BOILER EFFICIENCY CALCULATION (CONT'D)", 120) + "Page 2 of 3\n";
+            output2 += "\n\n";
+            output2 += centerText(A1_factory_name, 80) + "\n";
+            output2 += "\n\n\n";
+            output2 += `${"Boiler Number:".padEnd(15)} ${A2_boiler_id}\n`;
+            output2 += `${"Date:".padEnd(15)} ${A3_date}\n`;
+            output2 += `${"Run Number:".padEnd(15)} ${A4_run_number}\n`;
+            output2 += "\n\n";
+
+            function addPg2Item(label, value, unit = "") {
+                 output2 += `${label.padEnd(71)} ${formatNum(value,0,2,16)} ${unit}\n`;
+            }
+            addPg2Item("Excess Air, %", E1_excess_air_percent);
+            output2 += "\n";
+            addPg2Item("Theoretical Maximum Boiler Efficiency, %", E_theoretical_max_boiler_eff);
+            addPg2Item("Heat Losses Assumed in Boiler, %", S6_assumed_losses);
+            addPg2Item("Actual Boiler Efficiency Used, %", actual_boiler_eff_used);
+            output2 += "\n";
+            addPg2Item("Theoretical Maximum Furnace Temperature, deg. F", T5_theoretical_max_furnace_temp);
+            addPg2Item("Calculated Boiler Outlet Temperature, deg. F", T3_calc_boiler_outlet_temp);
+            output2 += "\n";
+            addPg2Item("Bagasse Burned (as fired), lb/hr", S9_lbs_as_fired_bagasse_required);
+            addPg2Item("Gross Calorific Value of Bagasse, Btu/lb", gross_cal_val_as_fired);
+            addPg2Item("Heat Transferred to Steam/lb bagasse burned, Btu", S8_heat_transferred_to_steam_per_lb_wet_bagasse);
+            const heat_supplied_per_lb_steam = (Math.abs(S1) < 1e-9) ? 0 : S7_heat_to_steam_btu_hr / S1;
+            addPg2Item("Heat Supplied by Boiler, Btu/lb steam", heat_supplied_per_lb_steam);
+            addPg2Item("Heat Input, Btu/hr", S10_heat_input_as_fired_btu_hr);
+            const lbs_steam_per_lb_bagasse_fired = (Math.abs(S9_lbs_as_fired_bagasse_required) < 1e-9) ? 0 : S1 / S9_lbs_as_fired_bagasse_required;
+            addPg2Item("Lbs Steam Produced per Lb Bagasse (as fired)", lbs_steam_per_lb_bagasse_fired);
+            output2 += "\n\n";
+            const combustion_air_total_lb_hr = Q_air_analysis[3][0] * F1_factor_actual_to_basis_bagasse_wt;
+            addPg2Item("Combustion Air, lb/hr", combustion_air_total_lb_hr);
+            addPg2Item("Volume of Combustion Air, SCFM", V1_vol_comb_air_SCFM);
+            addPg2Item("Volume of Combustion Air to Air Preheater, ACFM", V0_vol_comb_air_to_APH_ACFM);
+            addPg2Item("Volume of Combustion Air Out of Air Preheater, ACFM", V2_vol_comb_air_out_APH_ACFM);
+            output2 += "\n\n";
+            const weight_flue_gases_total_lb_hr = P_analysis[8][0] * F1_factor_actual_to_basis_bagasse_wt;
+            addPg2Item("Weight of Flue Gases, lb/hr", weight_flue_gases_total_lb_hr);
+            addPg2Item("Volume of Flue Gases, SCFM", V5_vol_flue_gas_SCFM);
+            addPg2Item("Volume of Flue Gases, DSCFM", V5_vol_flue_gas_DSCFM);
+            addPg2Item("Volume of Flue Gases (Boiler Outlet), ACFM", V3_vol_flue_gas_boiler_outlet_ACFM);
+            addPg2Item("Volume of Flue Gases (Air Heater Outlet), ACFM", V4_vol_flue_gas_APH_outlet_ACFM);
+            output2 += "\n\n";
+            const flue_gas_velocity_AH_inlet_ft_sec = (Math.abs(A1_aph_gas_flow_area) < 1e-9) ? 0 : V3_vol_flue_gas_boiler_outlet_ACFM / 60.0 / A1_aph_gas_flow_area;
+            const flue_gas_velocity_AH_outlet_ft_sec = (Math.abs(A1_aph_gas_flow_area) < 1e-9) ? 0 : V4_vol_flue_gas_APH_outlet_ACFM / 60.0 / A1_aph_gas_flow_area;
+            const avg_flue_gas_velocity_AH_ft_sec = (Math.abs(A1_aph_gas_flow_area) < 1e-9) ? 0 : (V3_vol_flue_gas_boiler_outlet_ACFM + V4_vol_flue_gas_APH_outlet_ACFM) / 2.0 / 60.0 / A1_aph_gas_flow_area;
+            addPg2Item("Flue Gas Velocity at Air Heater Inlet, Ft/Sec", flue_gas_velocity_AH_inlet_ft_sec);
+            addPg2Item("Flue Gas Velocity at Air Heater Outlet, Ft/Sec", flue_gas_velocity_AH_outlet_ft_sec);
+            addPg2Item("Average Flue Gas Velocity Through Air Heater, Ft/Sec", avg_flue_gas_velocity_AH_ft_sec);
+            output2 += "\n\n";
+            addPg2Item("Overall Heat Transfer Coefficient in Air Preheater, Btu/hr/ft2/deg. F", U_ohtc_aph);
+            output2 += "\n\n\n";
+            const emission_header_str = `${"Boiler Emissions".padEnd(39)} ${"lbs/hour".padStart(20)} ${"lbs/ton bagasse fired".padStart(25)} ${"lb/MM Btu".padStart(15)}\n`;
+            output2 += emission_header_str;
+            output2 += "-".repeat(emission_header_str.length -1) + "\n";
+            output2 += "\n";
+            function addEmissionLine(name, val1, val2, val3) {
+                 output2 += `${name.padEnd(39)} ${formatNum(val1,0,6,20)} ${formatNum(val2,0,6,25)} ${formatNum(val3,0,6,15)}\n`;
+            }
+            addEmissionLine("Carbon Monoxide", emissions_co_lb_hr, emissions_co_lb_ton, emissions_co_lb_mmbtu);
+            addEmissionLine("Nitrogen Oxides (as NO2)", emissions_nox_as_no2_lb_hr, emissions_nox_lb_ton, emissions_nox_lb_mmbtu);
+            addEmissionLine("Sulfur Dioxide", emissions_so2_lb_hr, emissions_so2_lb_ton, emissions_so2_lb_mmbtu);
+            addEmissionLine("Volatile Organic Compounds (as C3H8)", emissions_voc_as_c3h8_lb_hr, emissions_voc_lb_ton, emissions_voc_lb_mmbtu);
+            document.getElementById('outputPage2').textContent = output2;
+            document.getElementById('outputTitlePage2').textContent = "Page 2: Efficiency, Temperatures, Flows & Emissions";
+
+
+            let output3 = "";
+            output3 += centerText("BOILER EFFICIENCY CALCULATION (CONT'D)", 120) + "Page 3 of 3\n";
+            output3 += "\n\n";
+            output3 += centerText(A1_factory_name, 80) + "\n";
+            output3 += "\n\n\n";
+            output3 += `${"Boiler Number:".padEnd(15)} ${A2_boiler_id}\n`;
+            output3 += `${"Date:".padEnd(15)} ${A3_date}\n`;
+            output3 += `${"Run Number:".padEnd(15)} ${A4_run_number}\n`;
+            output3 += "\n\n";
+            output3 += centerText("STACK GAS ANALYSIS (Based on Actual Bagasse Burned)", 100) + "\n";
+            output3 += centerText("---------------------------------------------------", 100) + "\n";
+            output3 += "\n";
+            const header1_Z_str = `${"Component".padEnd(19)} ${"Lbs.".padStart(14)} ${"Lb. Moles".padStart(12)} ${"Molal Heat Capacity".padStart(20)} ${"Temp. Diff.".padStart(12)} ${"Heat Content, BTU".padStart(23)} ${"Wet Gas".padStart(10)} ${"Dry Gas".padStart(10)}\n`;
+            const header2_Z_str = `${"".padEnd(19)} ${"".padStart(14)} ${"".padStart(12)} ${"BTU/lb mole-deg F".padStart(20)} ${"deg. F".padStart(12)} ${"".padStart(23)} ${"Vol %".padStart(10)} ${"Vol %".padStart(10)}\n`;
+            output3 += header1_Z_str;
+            output3 += header2_Z_str;
+            output3 += "-".repeat(header1_Z_str.length -1) + "\n";
+
+            for (let i = 0; i < 8; i++) {
+                const dryPctStr_Z = (i < 5) ? formatNum(Z_actual_analysis[i][7],0,6,10,false) : "".padStart(10);
+                output3 += `${P_component_names[i].padEnd(19)} ${formatNum(Z_actual_analysis[i][0],0,2,14)} ${formatNum(Z_actual_analysis[i][1],0,4,12,false)} ${formatNum(Z_actual_analysis[i][2],0,4,10,false)} ${formatNum(Z_actual_analysis[i][3],0,2,12)} ${formatNum(Z_actual_analysis[i][4],0,1,23)} ${formatNum(Z_actual_analysis[i][6],0,4,10,false)} ${dryPctStr_Z}\n`;
+            }
+            output3 += "-".repeat(header1_Z_str.length -1) + "\n";
+            output3 += `${P_component_names[8].padEnd(19)} ${formatNum(Z_actual_analysis[8][0],0,2,14)} ${formatNum(Z_actual_analysis[8][1],0,4,12,false)} ${"".padStart(10)} ${"".padStart(12)} ${formatNum(Z_actual_analysis[8][4],0,1,23)} ${formatNum(Z_actual_analysis[8][6],0,4,10,false)} ${formatNum(Z_actual_analysis[8][7],0,6,10,false)}\n`;
+            output3 += "-".repeat(header1_Z_str.length -1) + "\n";
+            document.getElementById('outputPage3').textContent = output3;
+            document.getElementById('outputTitlePage3').textContent = "Page 3: Stack Gas Analysis (Actual Bagasse Burned)";
+
+        });
+    </script>
+</body>
+</html>
+
