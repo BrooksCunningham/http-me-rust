@@ -1,6 +1,5 @@
 // use core::fmt;
 use fastly::handle::client_ip_addr;
-// #[allow(unused_imports)]
 use fastly::http::{HeaderValue, Method, StatusCode};
 use fastly::Body;
 use fastly::{Backend, Error, KVStore, Request, Response};
@@ -77,6 +76,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/dynamic_backend") => return Ok(dynamic_backend(req, resp)?),
+        s if s.starts_with("/utilities/set_headers") => return Ok(set_headers(req, resp)?),
         s if s.starts_with("/client_ip_data") => return Ok(client_ip_data(req, resp)?),
 
         "/" => return Ok(swagger_ui_html(resp)?),
@@ -287,7 +287,7 @@ fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
     let store: KVStore = KVStore::open("assets_store")?.unwrap();
 
     // Get the value back from the KV store (as a string)
-    let swagger_html: Body  = store.lookup("swagger.html")?.take_body();
+    let swagger_html: Body = store.lookup("swagger.html")?.take_body();
 
     resp.set_body(swagger_html);
     return Ok(resp);
@@ -309,7 +309,7 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     // Get the value back from the KV store (as a string),
     // let req_filename_lookup = format!("static-assets/{}", &req_filename);
     // let static_asset: Body  = store.lookup(&req_filename_lookup)?.take_body();
-    let static_asset: Body  = store.lookup(&req_filename)?.take_body();
+    let static_asset: Body = store.lookup(&req_filename)?.take_body();
 
     let static_filename_parts = req_filename.split(".").collect::<Vec<&str>>();
     let static_filename_ext = static_filename_parts.last().cloned().unwrap_or("html");
@@ -329,6 +329,15 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
     return Ok(resp);
 }
 
+fn set_headers(req: Request, mut resp: Response) -> Result<Response, Error> {
+    for (name, value) in req.get_headers() {
+        if name.as_str().starts_with("x-") {
+            resp.set_header(name, value);
+        }
+    }
+    Ok(resp)
+}
+
 fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
     // Attempt to get the 'ip' query parameter.
     // If present, try to parse it as an IpAddr; if that fails, or if not present,
@@ -344,7 +353,7 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
 
     // Use geo_lookup to get the Geo object based on the chosen IP address.
     let geo_data: fastly::geo::Geo = fastly::geo::geo_lookup(ip_addr).unwrap();
-    
+   
     // Dynamically build the JSON object with the geo lookup results.
     let json_data = json!({
         "ip_address": ip_addr.to_string(),
