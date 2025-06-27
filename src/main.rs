@@ -332,7 +332,7 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 fn set_headers(req: Request, mut resp: Response) -> Result<Response, Error> {
     for (name, value) in req.get_headers() {
         if name.as_str().starts_with("x-") {
-            resp.set_header(format!(name, "resp-{}"), value);
+            resp.set_header(format!("resp-{}", name.as_str()), value);
         }
     }
     Ok(resp)
