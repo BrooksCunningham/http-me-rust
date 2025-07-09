@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Required</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Using Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <!-- Main container for the captcha card -->
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-800">Verification Required</h1>
+            <p class="mt-2 text-gray-600">To continue, please complete the challenge below.</p>
+        </div>
+
+        <!-- Iframe container with a border -->
+        <div class="mt-6 border border-gray-200 rounded-lg overflow-hidden">
+            <iframe
+                id="captcha-iframe"
+                class="w-full h-96 border-0"
+                src="/always-captcha"
+                title="Captcha Challenge"
+            ></iframe>
+        </div>
+        
+        <div class="text-center mt-4">
+             <p class="text-xs text-gray-400">Can't see the challenge? Try refreshing the page.</p>
+        </div>
+    </div>
+
+    <script>
+        // Listen for messages from the iframe
+        window.addEventListener('message', function(event) {
+            // It's good practice to check the origin of the message for security,
+            // especially if the iframe content could be from a different domain.
+            // For example: if (event.origin !== 'https://your-captcha-domain.com') return;
+            
+            // Check for the success message from the captcha
+            if (event.data && event.data.captchaStatus === 'success') {
+                console.log('Success message received from iframe. Navigating back.');
+                
+                // Navigate to the previous page in the browser history
+                window.history.back();
+            }
+        });
+    </script>
+
+</body>
+</html>
