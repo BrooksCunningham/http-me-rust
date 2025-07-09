@@ -41,32 +41,42 @@
     </div>
 
     <script>
-        // Listen for messages from the iframe
-        window.addEventListener('message', function(event) {
-            // --- TROUBLESHOOTING STEP ---
-            // The line below will log ALL messages received from the iframe to the browser's
-            // developer console. This is the best way to see what the captcha is actually sending.
-            console.log('Message received from iframe:', event.data);
+        const captchaIframe = document.getElementById('captcha-iframe');
+        
+        // We must wait for the iframe to fully load before we can safely access its content.
+        captchaIframe.onload = function() {
+            console.log("Iframe has successfully loaded.");
 
-            // It's good practice to check the origin of the message for security.
-            // If your captcha is hosted on the same domain, this check is a good idea.
-            // If it's on a different subdomain, you would adjust the origin check accordingly.
-            if (event.origin !== window.location.origin) {
-                console.warn('Message received from unexpected origin:', event.origin);
-                // return; // You might uncomment this in production for security
-            }
-            
-            // Check if the received data is in the expected format.
-            // The captcha's script MUST send an object like: { captchaStatus: 'success' }
-            if (event.data && event.data.captchaStatus === 'success') {
-                console.log('Success condition met! Navigating back.');
-                
-                // Navigate to the previous page in the browser history
-                window.history.back();
-            } else {
-                console.log('Success condition NOT met. The received data was not in the expected format.');
-            }
-        });
+            // Since it's the same origin, we can directly access the contentWindow.
+            const iframeWindow = captchaIframe.contentWindow;
+            const initialSrc = iframeWindow.location.href;
+            console.log("Initial iframe src:", initialSrc);
+
+            // This function will check if the iframe's URL has changed.
+            const checkForRedirect = () => {
+                const currentIframeHref = iframeWindow.location.href;
+
+                // Log the current URL on each check for better debugging.
+                console.log("Polling... Current iframe URL is:", currentIframeHref);
+
+                // If the URL has changed from the initial one, we assume success.
+                if (currentIframeHref !== initialSrc) {
+                    console.log('Iframe redirected to:', currentIframeHref, '- Assuming captcha success.');
+                    // Stop checking to prevent further actions
+                    clearInterval(pollingInterval);
+                    // Navigate the main page back
+                    window.history.back();
+                }
+            };
+
+            // Start polling every second (1000 milliseconds)
+            const pollingInterval = setInterval(checkForRedirect, 1000);
+        };
+
+        // It's also good practice to handle cases where the iframe might fail to load.
+        captchaIframe.onerror = function() {
+            console.error("The captcha iframe failed to load. Check the path '/always-captcha'.");
+        };
     </script>
 
 </body>
