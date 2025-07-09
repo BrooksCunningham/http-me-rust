@@ -43,77 +43,37 @@
     <script>
         const captchaIframe = document.getElementById('captcha-iframe');
         
+        // We must wait for the iframe to fully load before we can safely access its content.
         captchaIframe.onload = function() {
-            console.log('Iframe loaded. Injecting universal network interceptor script.');
-            
-            try {
-                const iframeDoc = captchaIframe.contentDocument || captchaIframe.contentWindow.document;
-                const script = iframeDoc.createElement('script');
-                
-                // This more robust script wraps both fetch and XMLHttpRequest.
-                script.textContent = `
-                    (function() {
-                        // Avoid re-injecting the script.
-                        if (window.isInterceptorInjected) return;
+            console.log("Iframe has successfully loaded.");
 
-                        console.log('Universal interceptor script is now running inside the iframe.');
+            // Since it's the same origin, we can directly access the contentWindow.
+            const iframeWindow = captchaIframe.contentWindow;
+            const initialSrc = iframeWindow.location.href;
+            console.log("Initial iframe src:", initialSrc);
 
-                        // --- Wrapper for fetch ---
-                        const originalFetch = window.fetch;
-                        window.fetch = function(...args) {
-                            const requestUrl = args[0] instanceof Request ? args[0].url : args[0];
-                            console.log('Intercepted FETCH request to:', requestUrl);
-                            
-                            return originalFetch.apply(this, args).then(response => {
-                                console.log('FETCH response from:', response.url, 'Status:', response.status);
-                                if (response.url.includes('fst-post-back') && response.ok) {
-                                    console.log('SUCCESS [FETCH]: Matched fst-post-back. Sending message.');
-                                    window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
-                                }
-                                return response;
-                            });
-                        };
+            // This function will check if the iframe's URL has changed.
+            const checkForRedirect = () => {
+                const currentIframeHref = iframeWindow.location.href;
 
-                        // --- Wrapper for XMLHttpRequest ---
-                        const originalXhrOpen = window.XMLHttpRequest.prototype.open;
-                        const originalXhrSend = window.XMLHttpRequest.prototype.send;
+                // Log the current URL on each check for better debugging.
+                console.log("Polling... Current iframe URL is:", currentIframeHref);
 
-                        window.XMLHttpRequest.prototype.open = function(method, url) {
-                            this._url = url; // Store the URL for later use in send()
-                            return originalXhrOpen.apply(this, arguments);
-                        };
+                // If the URL has changed from the initial one, we assume success.
+                if (currentIframeHref !== initialSrc) {
+                    console.log('Iframe redirected to:', currentIframeHref, '- Assuming captcha success.');
+                    // Stop checking to prevent further actions
+                    clearInterval(pollingInterval);
+                    // Navigate the main page back
+                    window.history.back();
+                }
+            };
 
-                        window.XMLHttpRequest.prototype.send = function() {
-                            this.addEventListener('load', function() {
-                                console.log('Intercepted XHR request to:', this._url, 'Status:', this.status);
-                                if (this._url && this._url.includes('fst-post-back') && this.status >= 200 && this.status < 300) {
-                                    console.log('SUCCESS [XHR]: Matched fst-post-back. Sending message.');
-                                    window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
-                                }
-                            });
-                            return originalXhrSend.apply(this, arguments);
-                        };
-                        
-                        window.isInterceptorInjected = true;
-                    })();
-                `;
-                
-                iframeDoc.body.appendChild(script);
-
-            } catch (e) {
-                console.error("Failed to inject script into iframe.", e);
-            }
+            // Start polling every second (1000 milliseconds)
+            const pollingInterval = setInterval(checkForRedirect, 1000);
         };
 
-        // This listener on the parent page waits for the message from the injected script.
-        window.addEventListener('message', function(event) {
-            if (event.origin !== window.location.origin) return;
-            if (event.data && event.data.captchaStatus === 'success') {
-                console.log('Success message received from iframe. Navigating back.');
-                window.history.back();
-            }
-        });
-
+        // It's also good practice to handle cases where the iframe might fail to load.
         captchaIframe.onerror = function() {
             console.error("The captcha iframe failed to load. Check the path '/always-captcha'.");
         };
