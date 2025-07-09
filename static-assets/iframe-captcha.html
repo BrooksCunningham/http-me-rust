@@ -43,51 +43,61 @@
     <script>
         const captchaIframe = document.getElementById('captcha-iframe');
         
-        // This function will be triggered once the iframe finishes loading.
-        // Its job is to inject our fetch listener into the iframe.
         captchaIframe.onload = function() {
-            console.log('Iframe loaded. Injecting fetch interceptor script.');
+            console.log('Iframe loaded. Injecting universal network interceptor script.');
             
             try {
-                // Get the iframe's document.
                 const iframeDoc = captchaIframe.contentDocument || captchaIframe.contentWindow.document;
-
-                // Create a new script element.
                 const script = iframeDoc.createElement('script');
                 
-                // This script wraps the iframe's own fetch function to watch network requests.
+                // This more robust script wraps both fetch and XMLHttpRequest.
                 script.textContent = `
                     (function() {
-                        // Avoid re-injecting the script if the iframe reloads.
-                        if (window.fetch.isWrapped) return;
+                        // Avoid re-injecting the script.
+                        if (window.isInterceptorInjected) return;
 
-                        console.log('Interceptor script is now running inside the iframe.');
+                        console.log('Universal interceptor script is now running inside the iframe.');
+
+                        // --- Wrapper for fetch ---
                         const originalFetch = window.fetch;
-
-                        // Create a new fetch function that wraps the original.
                         window.fetch = function(...args) {
                             const requestUrl = args[0] instanceof Request ? args[0].url : args[0];
+                            console.log('Intercepted FETCH request to:', requestUrl);
                             
-                            // Let the original fetch call proceed.
-                            const fetchPromise = originalFetch.apply(this, args);
-
-                            // After the promise resolves, inspect the response.
-                            fetchPromise.then(response => {
-                                // Check if the request was for 'fst-post-back' and was successful.
+                            return originalFetch.apply(this, args).then(response => {
+                                console.log('FETCH response from:', response.url, 'Status:', response.status);
                                 if (response.url.includes('fst-post-back') && response.ok) {
-                                    console.log('SUCCESS: Intercepted successful fst-post-back. Sending message to parent.');
+                                    console.log('SUCCESS [FETCH]: Matched fst-post-back. Sending message.');
+                                    window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
+                                }
+                                return response;
+                            });
+                        };
+
+                        // --- Wrapper for XMLHttpRequest ---
+                        const originalXhrOpen = window.XMLHttpRequest.prototype.open;
+                        const originalXhrSend = window.XMLHttpRequest.prototype.send;
+
+                        window.XMLHttpRequest.prototype.open = function(method, url) {
+                            this._url = url; // Store the URL for later use in send()
+                            return originalXhrOpen.apply(this, arguments);
+                        };
+
+                        window.XMLHttpRequest.prototype.send = function() {
+                            this.addEventListener('load', function() {
+                                console.log('Intercepted XHR request to:', this._url, 'Status:', this.status);
+                                if (this._url && this._url.includes('fst-post-back') && this.status >= 200 && this.status < 300) {
+                                    console.log('SUCCESS [XHR]: Matched fst-post-back. Sending message.');
                                     window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
                                 }
                             });
-
-                            // Return the original promise so the page's scripts work correctly.
-                            return fetchPromise;
+                            return originalXhrSend.apply(this, arguments);
                         };
-                        window.fetch.isWrapped = true;
+                        
+                        window.isInterceptorInjected = true;
                     })();
                 `;
                 
-                // Append and execute the script in the iframe's body.
                 iframeDoc.body.appendChild(script);
 
             } catch (e) {
@@ -97,11 +107,7 @@
 
         // This listener on the parent page waits for the message from the injected script.
         window.addEventListener('message', function(event) {
-            // Security check: ensure the message is from our own origin.
-            if (event.origin !== window.location.origin) {
-                return;
-            }
-
+            if (event.origin !== window.location.origin) return;
             if (event.data && event.data.captchaStatus === 'success') {
                 console.log('Success message received from iframe. Navigating back.');
                 window.history.back();
