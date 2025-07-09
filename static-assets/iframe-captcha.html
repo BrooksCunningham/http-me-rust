@@ -43,37 +43,25 @@
     <script>
         const captchaIframe = document.getElementById('captcha-iframe');
         
-        // We must wait for the iframe to fully load before we can safely access its content.
+        // Use a counter to track how many times the iframe has loaded.
+        let iframeLoadCount = 0;
+
+        // This function will now be triggered each time the iframe finishes loading content.
         captchaIframe.onload = function() {
-            console.log("Iframe has successfully loaded.");
+            iframeLoadCount++;
+            console.log(`Iframe has loaded ${iframeLoadCount} time(s).`);
 
-            // Since it's the same origin, we can directly access the contentWindow.
-            const iframeWindow = captchaIframe.contentWindow;
-            const initialSrc = iframeWindow.location.href;
-            console.log("Initial iframe src:", initialSrc);
-
-            // This function will check if the iframe's URL has changed.
-            const checkForRedirect = () => {
-                const currentIframeHref = iframeWindow.location.href;
-
-                // Log the current URL on each check for better debugging.
-                console.log("Polling... Current iframe URL is:", currentIframeHref);
-
-                // If the URL has changed from the initial one, we assume success.
-                if (currentIframeHref !== initialSrc) {
-                    console.log('Iframe redirected to:', currentIframeHref, '- Assuming captcha success.');
-                    // Stop checking to prevent further actions
-                    clearInterval(pollingInterval);
-                    // Navigate the main page back
-                    window.history.back();
-                }
-            };
-
-            // Start polling every second (1000 milliseconds)
-            const pollingInterval = setInterval(checkForRedirect, 1000);
+            // The first load (count = 1) is the initial captcha.
+            // Any subsequent load (count > 1) means the captcha was solved and the iframe reloaded.
+            if (iframeLoadCount > 1) {
+                console.log('Iframe has reloaded. Assuming captcha success and navigating back.');
+                
+                // Navigate the main page back to the previous page in history.
+                window.history.back();
+            }
         };
 
-        // It's also good practice to handle cases where the iframe might fail to load.
+        // It's still good practice to handle cases where the iframe might fail to load initially.
         captchaIframe.onerror = function() {
             console.error("The captcha iframe failed to load. Check the path '/always-captcha'.");
         };
