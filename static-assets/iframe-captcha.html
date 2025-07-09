@@ -46,22 +46,51 @@
         // Use a counter to track how many times the iframe has loaded.
         let iframeLoadCount = 0;
 
-        // This function will now be triggered each time the iframe finishes loading content.
+        // This function will be triggered each time the iframe finishes loading content.
         captchaIframe.onload = function() {
             iframeLoadCount++;
             console.log(`Iframe has loaded ${iframeLoadCount} time(s).`);
 
-            // The first load (count = 1) is the initial captcha.
-            // Any subsequent load (count > 1) means the captcha was solved and the iframe reloaded.
+            // The first load is the initial captcha.
+            // On the second load, we inject a script into the iframe.
             if (iframeLoadCount > 1) {
-                console.log('Iframe has reloaded. Assuming captcha success and navigating back.');
+                console.log('Iframe reloaded. Injecting script to send success message.');
                 
-                // Navigate the main page back to the previous page in history.
-                window.history.back();
+                try {
+                    // Get the iframe's document.
+                    const iframeDoc = captchaIframe.contentDocument || captchaIframe.contentWindow.document;
+
+                    // Create a new script element.
+                    const script = iframeDoc.createElement('script');
+                    
+                    // This script, when run inside the iframe, will send a message to the parent.
+                    script.textContent = `
+                        console.log('Injected script is sending success message...');
+                        window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
+                    `;
+                    
+                    // Append and execute the script in the iframe's body.
+                    iframeDoc.body.appendChild(script);
+
+                } catch (e) {
+                    console.error("Failed to inject script into iframe.", e);
+                }
             }
         };
 
-        // It's still good practice to handle cases where the iframe might fail to load initially.
+        // This listener on the parent page waits for the message from the injected script.
+        window.addEventListener('message', function(event) {
+            // Security check: ensure the message is from our own origin.
+            if (event.origin !== window.location.origin) {
+                return;
+            }
+
+            if (event.data && event.data.captchaStatus === 'success') {
+                console.log('Success message received from iframe. Navigating back.');
+                window.history.back();
+            }
+        });
+
         captchaIframe.onerror = function() {
             console.error("The captcha iframe failed to load. Check the path '/always-captcha'.");
         };
