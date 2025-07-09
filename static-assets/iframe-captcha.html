@@ -16,10 +16,10 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <!-- Main container for the captcha card -->
-    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-6 md:p-8">
+    <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-6 md:p-8">
         <div class="text-center">
             <h1 class="text-2xl font-bold text-gray-800">Verification Required</h1>
             <p class="mt-2 text-gray-600">To continue, please complete the challenge below.</p>
@@ -29,7 +29,7 @@
         <div class="mt-6 border border-gray-200 rounded-lg overflow-hidden">
             <iframe
                 id="captcha-iframe"
-                class="w-full h-96 border-0"
+                class="w-full h-[640px] border-0"
                 src="/always-captcha"
                 title="Captcha Challenge"
             ></iframe>
@@ -43,16 +43,28 @@
     <script>
         // Listen for messages from the iframe
         window.addEventListener('message', function(event) {
-            // It's good practice to check the origin of the message for security,
-            // especially if the iframe content could be from a different domain.
-            // For example: if (event.origin !== 'https://your-captcha-domain.com') return;
+            // --- TROUBLESHOOTING STEP ---
+            // The line below will log ALL messages received from the iframe to the browser's
+            // developer console. This is the best way to see what the captcha is actually sending.
+            console.log('Message received from iframe:', event.data);
+
+            // It's good practice to check the origin of the message for security.
+            // If your captcha is hosted on the same domain, this check is a good idea.
+            // If it's on a different subdomain, you would adjust the origin check accordingly.
+            if (event.origin !== window.location.origin) {
+                console.warn('Message received from unexpected origin:', event.origin);
+                // return; // You might uncomment this in production for security
+            }
             
-            // Check for the success message from the captcha
+            // Check if the received data is in the expected format.
+            // The captcha's script MUST send an object like: { captchaStatus: 'success' }
             if (event.data && event.data.captchaStatus === 'success') {
-                console.log('Success message received from iframe. Navigating back.');
+                console.log('Success condition met! Navigating back.');
                 
                 // Navigate to the previous page in the browser history
                 window.history.back();
+            } else {
+                console.log('Success condition NOT met. The received data was not in the expected format.');
             }
         });
     </script>
