@@ -43,37 +43,54 @@
     <script>
         const captchaIframe = document.getElementById('captcha-iframe');
         
-        // We must wait for the iframe to fully load before we can safely access its content.
+        // Use a counter to track how many times the iframe has loaded.
+        let iframeLoadCount = 0;
+
+        // This function will be triggered each time the iframe finishes loading content.
         captchaIframe.onload = function() {
-            console.log("Iframe has successfully loaded.");
+            iframeLoadCount++;
+            console.log(`Iframe has loaded ${iframeLoadCount} time(s).`);
 
-            // Since it's the same origin, we can directly access the contentWindow.
-            const iframeWindow = captchaIframe.contentWindow;
-            const initialSrc = iframeWindow.location.href;
-            console.log("Initial iframe src:", initialSrc);
+            // The first load is the initial captcha.
+            // On the second load, we inject a script into the iframe.
+            if (iframeLoadCount > 1) {
+                console.log('Iframe reloaded. Injecting script to send success message.');
+                
+                try {
+                    // Get the iframe's document.
+                    const iframeDoc = captchaIframe.contentDocument || captchaIframe.contentWindow.document;
 
-            // This function will check if the iframe's URL has changed.
-            const checkForRedirect = () => {
-                const currentIframeHref = iframeWindow.location.href;
+                    // Create a new script element.
+                    const script = iframeDoc.createElement('script');
+                    
+                    // This script, when run inside the iframe, will send a message to the parent.
+                    script.textContent = `
+                        console.log('Injected script is sending success message...');
+                        window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
+                    `;
+                    
+                    // Append and execute the script in the iframe's body.
+                    iframeDoc.body.appendChild(script);
 
-                // Log the current URL on each check for better debugging.
-                console.log("Polling... Current iframe URL is:", currentIframeHref);
-
-                // If the URL has changed from the initial one, we assume success.
-                if (currentIframeHref !== initialSrc) {
-                    console.log('Iframe redirected to:', currentIframeHref, '- Assuming captcha success.');
-                    // Stop checking to prevent further actions
-                    clearInterval(pollingInterval);
-                    // Navigate the main page back
-                    window.history.back();
+                } catch (e) {
+                    console.error("Failed to inject script into iframe.", e);
                 }
-            };
-
-            // Start polling every second (1000 milliseconds)
-            const pollingInterval = setInterval(checkForRedirect, 1000);
+            }
         };
 
-        // It's also good practice to handle cases where the iframe might fail to load.
+        // This listener on the parent page waits for the message from the injected script.
+        window.addEventListener('message', function(event) {
+            // Security check: ensure the message is from our own origin.
+            if (event.origin !== window.location.origin) {
+                return;
+            }
+
+            if (event.data && event.data.captchaStatus === 'success') {
+                console.log('Success message received from iframe. Navigating back.');
+                window.history.back();
+            }
+        });
+
         captchaIframe.onerror = function() {
             console.error("The captcha iframe failed to load. Check the path '/always-captcha'.");
         };
