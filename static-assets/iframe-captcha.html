@@ -43,38 +43,55 @@
     <script>
         const captchaIframe = document.getElementById('captcha-iframe');
         
-        // Use a counter to track how many times the iframe has loaded.
-        let iframeLoadCount = 0;
-
-        // This function will be triggered each time the iframe finishes loading content.
+        // This function will be triggered once the iframe finishes loading.
+        // Its job is to inject our fetch listener into the iframe.
         captchaIframe.onload = function() {
-            iframeLoadCount++;
-            console.log(`Iframe has loaded ${iframeLoadCount} time(s).`);
+            console.log('Iframe loaded. Injecting fetch interceptor script.');
+            
+            try {
+                // Get the iframe's document.
+                const iframeDoc = captchaIframe.contentDocument || captchaIframe.contentWindow.document;
 
-            // The first load is the initial captcha.
-            // On the second load, we inject a script into the iframe.
-            if (iframeLoadCount > 1) {
-                console.log('Iframe reloaded. Injecting script to send success message.');
+                // Create a new script element.
+                const script = iframeDoc.createElement('script');
                 
-                try {
-                    // Get the iframe's document.
-                    const iframeDoc = captchaIframe.contentDocument || captchaIframe.contentWindow.document;
+                // This script wraps the iframe's own fetch function to watch network requests.
+                script.textContent = `
+                    (function() {
+                        // Avoid re-injecting the script if the iframe reloads.
+                        if (window.fetch.isWrapped) return;
 
-                    // Create a new script element.
-                    const script = iframeDoc.createElement('script');
-                    
-                    // This script, when run inside the iframe, will send a message to the parent.
-                    script.textContent = `
-                        console.log('Injected script is sending success message...');
-                        window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
-                    `;
-                    
-                    // Append and execute the script in the iframe's body.
-                    iframeDoc.body.appendChild(script);
+                        console.log('Interceptor script is now running inside the iframe.');
+                        const originalFetch = window.fetch;
 
-                } catch (e) {
-                    console.error("Failed to inject script into iframe.", e);
-                }
+                        // Create a new fetch function that wraps the original.
+                        window.fetch = function(...args) {
+                            const requestUrl = args[0] instanceof Request ? args[0].url : args[0];
+                            
+                            // Let the original fetch call proceed.
+                            const fetchPromise = originalFetch.apply(this, args);
+
+                            // After the promise resolves, inspect the response.
+                            fetchPromise.then(response => {
+                                // Check if the request was for 'fst-post-back' and was successful.
+                                if (response.url.includes('fst-post-back') && response.ok) {
+                                    console.log('SUCCESS: Intercepted successful fst-post-back. Sending message to parent.');
+                                    window.parent.postMessage({ captchaStatus: 'success' }, window.location.origin);
+                                }
+                            });
+
+                            // Return the original promise so the page's scripts work correctly.
+                            return fetchPromise;
+                        };
+                        window.fetch.isWrapped = true;
+                    })();
+                `;
+                
+                // Append and execute the script in the iframe's body.
+                iframeDoc.body.appendChild(script);
+
+            } catch (e) {
+                console.error("Failed to inject script into iframe.", e);
             }
         };
 
