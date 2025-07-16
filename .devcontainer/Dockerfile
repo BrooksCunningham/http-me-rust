@@ -13,7 +13,9 @@ RUN if [ "$VARIANT" = "noble" ]; then \
         fi; \
     fi
 
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y 
+# Needed to push code
+RUN apt-get install git-lfs
 
 # Install Fastly CLI
 RUN curl -sfL https://fastly.com/cli/install.sh | bash
