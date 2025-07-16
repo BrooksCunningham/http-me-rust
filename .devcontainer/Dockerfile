@@ -46,11 +46,6 @@ RUN . "$NVM_DIR/nvm.sh" && \
     nvm install 22 && \
     npm install -g npm@11.4.2
 
-# First, install Node.js and upgrade npm
-RUN . "$NVM_DIR/nvm.sh" && \
-    nvm install 22 && \
-    npm install -g npm@11.4.2
-
 # Then, in a separate step, install the Gemini CLI
 # Note that we source nvm.sh AGAIN to make npm available.
 RUN . "$NVM_DIR/nvm.sh" && \
