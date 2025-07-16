@@ -42,7 +42,10 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
 # Activate nvm and install Node.js and global packages.
 # Using a login shell ensures nvm is sourced from the profile and available.
 SHELL ["/bin/bash", "-l", "-c"]
-RUN nvm install 22 && \
-    npm install -g npm@11.4.2 && \
-    npm install -g @google/gemini-cli
+RUN . "$NVM_DIR/nvm.sh" && \
+    nvm install 22 && \
+    npm install -g npm@11.4.2
+
+# Install Gemini CLI
+RUN npm install -g @google/gemini-cli
 
