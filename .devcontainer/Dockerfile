@@ -1,21 +1,9 @@
 # https://github.com/devcontainers/images/tree/main/src/base-ubuntu/.devcontainer
-ARG VARIANT="noble"
-FROM buildpack-deps:${VARIANT}-curl
-
-LABEL dev.containers.features="common"
-
-ARG VARIANT
-RUN if [ "$VARIANT" = "noble" ]; then \
-        if id "ubuntu" &>/dev/null; then \
-            echo "Deleting user 'ubuntu'  for $VARIANT" && userdel -f -r ubuntu || echo "Failed to delete ubuntu user for $VARIANT"; \
-        else \
-            echo "User 'ubuntu' does not exist for $VARIANT"; \
-        fi; \
-    fi
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 RUN apt-get update && apt-get upgrade -y 
 # Needed to push code
-RUN apt-get install -y git-lfs
+# RUN apt-get install -y git-lfs
 
 # Install Fastly CLI
 RUN curl -sfL https://fastly.com/cli/install.sh | bash
