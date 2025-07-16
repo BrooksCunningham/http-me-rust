@@ -1,12 +1,14 @@
 # https://github.com/devcontainers/images/tree/main/src/base-ubuntu/.devcontainer
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
+# Define arguments for the user and their home directory.
+# These will default to 'vscode' but can be overridden.
+ARG USERNAME=vscode
+ARG USER_HOME=/home/${USERNAME}
+
 RUN apt-get update && apt-get upgrade -y 
 # Needed to push code
 # RUN apt-get install -y git-lfs
-
-# Install Fastly CLI
-RUN curl -sfL https://fastly.com/cli/install.sh | bash
 
 # Install httpie
 # Combining steps for layer efficiency and ensuring dependencies like gnupg are present.
@@ -16,29 +18,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg ca-certif
     apt-get update && \
     apt-get install -y httpie 
 
-# Install NVM, Node.js, and global npm packages
-# The original Dockerfile had several issues here:
-# 1. The nvm version v0.40.3 resulted in a 404 Not Found error. It has been corrected to a recent, valid version (v0.39.7).
-# 2. Each 'RUN' command executes in a new shell. The original file tried to export variables and source nvm in separate layers,
-#    which does not work. All nvm-related commands that depend on each other must be in the same RUN instruction.
-#
-# The following section corrects this by installing nvm and then using a login shell (`-l`)
-# to ensure the nvm environment is loaded for subsequent commands.
-ENV NVM_DIR /root/.nvm
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+# Switch back to the non-root user for the NVM installation
+USER ${USERNAME}
+
+# install nvm
+# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+ENV NVM_DIR=${USER_HOME}/.nvm
+# Set the NVM_DIR environment variable to the correct user's home directory
 
 # Activate nvm and install Node.js and global packages.
-# Using a login shell ensures nvm is sourced from the profile and available.
-SHELL ["/bin/bash", "-l", "-c"]
-RUN . "$NVM_DIR/nvm.sh" && \
-    nvm install 22 && \
-    npm install -g npm@11.4.2
+# RUN . "$NVM_DIR/nvm.sh" && \
+#     nvm install 22 && \
+#     npm install -g npm@11.4.2
 
 # Then, in a separate step, install the Gemini CLI
 # Note that we source nvm.sh AGAIN to make npm available.
-RUN . "$NVM_DIR/nvm.sh" && \
-    npm install -g @google/gemini-cli
+# RUN . "$NVM_DIR/nvm.sh" && \
+#     npm install -g @google/gemini-cli \
+#     npm install -g @fastly/cli@latest
 
-# Install Gemini CLI
-# RUN npm install -g @google/gemini-cli
+#### Install Fastly CLI # https://www.fastly.com/documentation/reference/tools/cli/
 
