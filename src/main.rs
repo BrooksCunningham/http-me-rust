@@ -21,6 +21,8 @@ fn main() -> Result<(), Error> {
     let client_req = Request::from_client();
 
     let mut server_resp = handler(client_req)?;
+    // https://www.fastly.com/documentation/guides/concepts/compression/#dynamic-compression
+    server_resp.set_header("x-compress-hint", "on");
 
     match server_resp.get_header_str("action-tarpit") {
         Some(ep) if ep.contains("1") => {
