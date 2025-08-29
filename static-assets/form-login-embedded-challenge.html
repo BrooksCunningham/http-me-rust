@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/_fs-ch-1T1wmsGaOgGaSxcX/assets/script.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
@@ -27,12 +28,14 @@
             color: #333;
         }
 
-        .login-form input {
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
         }
 
         .login-form button {
@@ -49,17 +52,55 @@
         .login-form button:hover {
             background-color: #4a54e1;
         }
+
+        /* Added styles for the checkbox */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .checkbox-container input {
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <form action="/anything/login" method="post" class="login-form">
+        <form action="/anything/login" method="post" class="login-form" id="loginForm">
             <h1>Login</h1>
             <input type="text" placeholder="Username" name="username" required>
             <input type="password" placeholder="Password" name="password" required>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="failLogin" name="failLogin">
+                <label for="failLogin">Simulate Failed Login</label>
+            </div>
+            
             <button type="submit">Log In</button>
         </form>
     </div>
-  <script src="/_fs-ch-1T1wmsGaOgGaSxcX/clientdetection.js" defer></script>
+
+    <script>
+        // Select the form and the checkbox by their IDs
+        const loginForm = document.getElementById('loginForm');
+        const failCheckbox = document.getElementById('failLogin');
+        
+        // Store the original action URL
+        const originalAction = loginForm.action;
+
+        // Listen for the form submission event
+        loginForm.addEventListener('submit', function(event) {
+            // Check if the checkbox is selected
+            if (failCheckbox.checked) {
+                // If it is, append the query parameter to the action URL
+                this.action = originalAction + '?status=401';
+            } else {
+                // Otherwise, ensure the action is the original URL
+                this.action = originalAction;
+            }
+        });
+    </script>
 </body>
 </html>
