@@ -77,7 +77,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         s if s.starts_with("/anything") => return Ok(anything(req, resp)?),
         s if s.starts_with("/static-assets/") => return Ok(get_static_asset(&req, resp)?),
         s if s.starts_with("/forms/post") => return Ok(get_static_asset(&req, resp)?),
-        s if s.starts_with("/dynamic_backend") => return Ok(dynamic_backend(req, resp)?),
+        // s if s.starts_with("/dynamic_backend") => return Ok(dynamic_backend(req, resp)?),
         s if s.starts_with("/utilities/set_headers") => return Ok(set_headers(req, resp)?),
         s if s.starts_with("/client_ip_data") => return Ok(client_ip_data(req, resp)?),
 
