@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPA WAF Challenge</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Simple loading spinner for feedback */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white font-sans h-full flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 md:p-8">
+        <h1 class="text-2xl font-bold text-center text-blue-600 dark:text-blue-400 mb-4">WAF Challenge Demo</h1>
+        <p class="text-center text-gray-600 dark:text-gray-300 mb-6">
+            Click the button to simulate a POST request. The interceptor will catch 406 responses.
+        </p>
+
+        <!-- Checkbox to add query param -->
+        <div class="flex items-center justify-center mb-4">
+            <input id="blockCheckbox" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label for="blockCheckbox" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Add '?block' query param to fetch</label>
+        </div>
+
+        <!-- Action Button -->
+        <button id="submitButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200 flex items-center justify-center gap-2">
+            <span id="button-text">Submit POST to /anything/post/</span>
+            <div id="loader" class="loader hidden"></div>
+        </button>
+
+        <!-- Status Log -->
+        <div class="mt-6 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <h3 class="font-semibold mb-2">Status Log:</h3>
+            <div id="statusLog" class="text-sm text-gray-700 dark:text-gray-200 space-y-2 h-24 overflow-y-auto">
+                <!-- Log messages will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Utility to log messages to the UI ---
+        // Moved to global scope & made resilient for the fetch interceptor
+        function logStatus(message) {
+            console.log(message);
+            const statusLog = document.getElementById('statusLog');
+            
+            // Log to console if UI isn't ready, otherwise update UI
+            if (statusLog) {
+                const entry = document.createElement('div');
+                entry.textContent = `[${new Date().toLocaleTimeString()}]: ${message}`;
+                // Add to top of log
+                statusLog.prepend(entry);
+            }
+        }
+
+        // --- Global Fetch Interceptor for WAF 406 Challenge ---
+        (function() {
+            const originalFetch = window.fetch; // Store original fetch
+
+            window.fetch = async function(...args) {
+                // Perform the original request
+                const response = await originalFetch.apply(this, args);
+
+                // --- THIS IS THE CORE WAF CHALLENGE LOGIC ---
+                if (response.status === 406) {
+                    logStatus('Global fetch interceptor detected WAF 406!');
+                    
+                    const currentUrl = new URL(window.location.href);
+                    
+                    // Check if param already exists to avoid loop
+                    if (!currentUrl.searchParams.has('challenge-js')) {
+                        logStatus('Reloading with ?challenge-js parameter...');
+                        currentUrl.searchParams.set('challenge-js', ''); // Sets param without a value
+                        window.location.href = currentUrl.toString();
+
+                        // Return a promise that never resolves to stop
+                        // the original caller from processing the 406 response
+                        // since the page is reloading.
+                        return new Promise(() => {}); 
+                    } else {
+                        logStatus('Already on challenge page. WAF block persists.');
+                    }
+                }
+
+                // If not 406, return the response as normal
+                return response;
+            };
+        })();
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const submitButton = document.getElementById('submitButton');
+            // const statusLog = document.getElementById('statusLog'); // No longer needed here
+            const loader = document.getElementById('loader');
+            const buttonText = document.getElementById('button-text');
+
+            // --- Utility to log messages to the UI ---
+            // (This function is now defined in the global scope)
+            
+            // --- Check if we loaded with the challenge parameter ---
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('challenge-js')) {
+                logStatus('Page loaded with ?challenge-js.');
+                logStatus('WAF challenge script would run now.');
+                // Optionally, you could try the fetch again here
+            } else {
+                logStatus('Page loaded. Ready to submit.');
+            }
+
+            // --- Handle the button click ---
+            submitButton.addEventListener('click', async () => {
+                // Show loading state
+                loader.classList.remove('hidden');
+                buttonText.textContent = 'Submitting...';
+                submitButton.disabled = true;
+
+                // This is the relative path from your requirements.
+                const productionUrl = '/anything/post/';
+
+                // Get checkbox state
+                const blockCheckbox = document.getElementById('blockCheckbox');
+                const shouldAddBlockParam = blockCheckbox.checked;
+
+                // NOTE: For this demonstration to work, we must simulate the 406
+                // response. We use http.edgecompute.app for this. In your real environment,
+                // you would use `productionUrl`.
+                let demoUrl = '/status/406';
+
+                // Add query param if checked
+                if (shouldAddBlockParam) {
+                    demoUrl += '?block=true';
+                }
+
+                logStatus(`Submitting POST request to ${demoUrl}...`);
+
+                try {
+                    const response = await fetch(demoUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ data: 'challenge-test' })
+                    });
+
+                    // The global fetch interceptor will handle the 406
+                    // before this code even runs. If a 406 happened,
+                    // the 'response' variable will be a pending promise
+                    // and this line will not be hit as the page reloads.
+                    logStatus(`Received status: ${response.status}`);
+
+                    // --- THIS IS THE CORE WAF CHALLENGE LOGIC ---
+                    // The global handler now manages the 406.
+                    // We just need to handle the success/other error cases.
+                    
+                    if (response.ok) {
+                        logStatus('Request successful (not 406).');
+                    } else {
+                        // This will only run for non-406 errors, 
+                        // as 406 is caught by the global interceptor.
+                        logStatus(`Unhandled status: ${response.status}`);
+                    }
+
+                } catch (error) {
+                    logStatus(`Network Error: ${error.message}`);
+                    console.error('Fetch error:', error);
+                } finally {
+                    // Hide loading state (unless we are redirecting)
+                    if (statusLog.textContent.includes('Reloading')) {
+                         buttonText.textContent = 'Reloading...';
+                    } else {
+                        loader.classList.add('hidden');
+                        buttonText.textContent = 'Submit POST to /anything/post/';
+                        submitButton.disabled = false;
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+
