@@ -1,15 +1,14 @@
 // use core::fmt;
 use fastly::handle::client_ip_addr;
-use fastly::http::{HeaderValue, Method, StatusCode};
+use fastly::http::{Method, StatusCode};
 use fastly::Body;
-use fastly::{Backend, Error, KVStore, Request, Response};
+use fastly::{Error, KVStore, Request, Response};
 use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
 use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
-use std::time::Instant;
 
 fn main() -> Result<(), Error> {
     // Log service version
@@ -87,16 +86,6 @@ fn handler(mut req: Request) -> Result<Response, Error> {
         _ => (),
     };
     return Ok::<fastly::Response, Error>(resp);
-}
-
-// Define a struct to deserialize the incoming JSON body
-#[derive(Deserialize)]
-struct ClientDynamicBackendRequestBody {
-    backend: String,
-    method: Option<String>,
-    target_url: Option<String>,
-    headers: Option<Value>,
-    repeat: Option<u64>,
 }
 
 fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
