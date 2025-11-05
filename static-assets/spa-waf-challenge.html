@@ -115,7 +115,7 @@
                 submitButton.disabled = true;
 
                 // This is the relative path from your requirements.
-                const productionUrl = '/anything/post/';
+                // const productionUrl = '/anything/post/';
 
                 // Get checkbox state
                 const blockCheckbox = document.getElementById('blockCheckbox');
@@ -124,7 +124,7 @@
                 // NOTE: For this demonstration to work, we must simulate the 406
                 // response. We use http.edgecompute.app for this. In your real environment,
                 // you would use `productionUrl`.
-                let demoUrl = '/status/406';
+                let demoUrl = '/anything/waf-intercept-demo/200';
 
                 // Add query param if checked
                 if (shouldAddBlockParam) {
