@@ -3,7 +3,6 @@ use fastly::handle::client_ip_addr;
 use fastly::http::{Method, StatusCode};
 use fastly::Body;
 use fastly::{Error, KVStore, Request, Response};
-use serde::Deserialize;
 use serde_json::json;
 use serde_json::Value;
 use std::io::Write;
