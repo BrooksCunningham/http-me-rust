@@ -1,7 +1,13 @@
 [package]
-name = "fastly-compute-project"
+name = "http-me-rust"
 version = "0.1.0"
+authors = ["Brooks Cunningham <brookscunningham@gmail.com>"]
 edition = "2021"
+description = "HTTP testing and debugging service built on Fastly Compute@Edge"
+repository = "https://github.com/BrooksCunningham/http-me-rust"
+license = "MIT"
+keywords = ["http", "testing", "debugging", "fastly", "edge"]
+categories = ["web-programming", "development-tools"]
 # Remove this line if you want to be able to publish this crate as open source on crates.io.
 # Otherwise, `publish = false` prevents an accidental `cargo publish` from revealing private source.
 publish = false

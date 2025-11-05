@@ -1,0 +1,44 @@
+# Git attributes for better code review and consistent line endings
+# https://git-scm.com/docs/gitattributes
+
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source code
+*.rs text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Web assets
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+
+# Documentation
+*.txt text eol=lf
+LICENSE text eol=lf
+CONTRIBUTING.md text eol=lf
+SECURITY.md text eol=lf
+README.md text eol=lf
+ARCHITECTURE.md text eol=lf
+
+# Scripts
+*.sh text eol=lf
+
+# Binary files
+*.jpg binary
+*.png binary
+*.ico binary
+*.wasm binary
+
+# Denote generated files (for diff purposes)
+Cargo.lock linguist-generated=true
+*.map linguist-generated=true
+
+# Export ignore - files to exclude from archives
+.gitattributes export-ignore
+.gitignore export-ignore
+.editorconfig export-ignore

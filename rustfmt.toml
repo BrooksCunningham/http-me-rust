@@ -1,0 +1,43 @@
+# Rustfmt configuration
+# See https://rust-lang.github.io/rustfmt/ for options
+
+# Edition to use for formatting
+edition = "2021"
+
+# Maximum width of each line
+max_width = 100
+
+# Maximum width of comments
+comment_width = 80
+
+# Use field init shorthand if possible
+use_field_init_shorthand = true
+
+# Use try shorthand (?-operator)
+use_try_shorthand = true
+
+# Import reordering
+reorder_imports = true
+reorder_modules = true
+
+# Format strings
+format_strings = true
+
+# Format code in doc comments
+format_code_in_doc_comments = true
+
+# Newline style
+newline_style = "Unix"
+
+# Merge imports from the same crate
+imports_granularity = "Crate"
+
+# Control brace style
+# brace_style = "SameLineWhere"
+
+# Remove nested parentheses
+remove_nested_parens = true
+
+# Format macro definitions
+format_macro_matchers = true
+format_macro_bodies = true
