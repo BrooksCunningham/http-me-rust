@@ -1,6 +1,17 @@
 // --- Global Fetch Interceptor for WAF 406 Challenge ---
 (function() {
-    // Store the original window.fetch function
+    // --- Check for existing modifications ---
+    // Native browser functions, when converted to a string,
+    // will typically include "[native code]".
+    if (window.fetch.toString().indexOf('[native code]') === -1) {
+        console.warn(
+            'WAF Interceptor Warning: window.fetch appears to be modified by another script. ' +
+            'This may cause compatibility issues. The interceptor will still be attached.'
+        );
+    }
+    // --- End of check ---
+
+    // Store the original window.fetch function (whether native or already modified)
     const originalFetch = window.fetch; 
 
     // A flag to prevent multiple reloads from simultaneous fetch calls
