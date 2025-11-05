@@ -11,19 +11,20 @@
         const response = await originalFetch.apply(this, args);
 
         // --- THIS IS THE CORE WAF CHALLENGE LOGIC ---
+        // Check for 406 status and ensure we aren't already reloading
         if (response.status === 406 && !isReloading) {
             console.log('Global fetch interceptor detected WAF 406!');
             
             const currentUrl = new URL(window.location.href);
             
             // Check if param already exists to avoid a reload loop
-            if (!currentUrl.searchParams.has('challenge-js')) {
+            if (!currentUrl.searchParams.has('challenge-client')) {
                 // Set flag to prevent other concurrent requests from also
                 // triggering a reload
                 isReloading = true; 
-                console.log('Reloading with ?challenge-js parameter...');
+                console.log('Reloading with ?challenge-client parameter...');
                 
-                currentUrl.searchParams.set('challenge-js', ''); // Sets param without a value
+                currentUrl.searchParams.set('challenge-client', ''); // Sets param without a value
                 window.location.href = currentUrl.toString();
 
                 // Return a promise that never resolves to stop
