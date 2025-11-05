@@ -143,7 +143,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     // tarpit implementation
     // https://github.com/BrooksCunningham/Fastly-Training-Demos/blob/d35589eb6652c9f8df29e407d4a6177f11c5ff7a/TarPit/src/main.rs#L27
 
-    // Add tarpitting header in the response if tarpitting should occur. 
+    // Add tarpitting header in the response if tarpitting should occur.
     // The main function checks this header and applies tarpit based on its value.
     match req.get_header_str(ENDPOINT_HEADER) {
         Some(ep) if ep.contains("tarpit") => resp.set_header(TARPIT_ACTION_HEADER, "1"),
@@ -304,7 +304,6 @@ fn status(req: &Request, mut resp: Response) -> Result<Response, Error> {
 ///
 /// Returns the modified response with the status code set.
 fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error> {
-
     resp.set_status(status_u16);
     Ok(resp)
 
@@ -422,7 +421,10 @@ fn get_static_asset(req: &Request, mut resp: Response) -> Result<Response, Error
 fn set_headers(req: Request, mut resp: Response) -> Result<Response, Error> {
     for (name, value) in req.get_headers() {
         if name.as_str().starts_with(CUSTOM_HEADER_PREFIX) {
-            resp.set_header(format!("{}{}", RESPONSE_HEADER_PREFIX, name.as_str()), value);
+            resp.set_header(
+                format!("{}{}", RESPONSE_HEADER_PREFIX, name.as_str()),
+                value,
+            );
         }
     }
     Ok(resp)
@@ -454,7 +456,8 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
     // Attempt to get the 'ip' query parameter.
     // If present, try to parse it as an IpAddr; if that fails, or if not present,
     // use the client's actual IP address.
-    let ip_addr: std::net::IpAddr = if let Some(ip_param) = req.get_query_parameter(IP_QUERY_PARAM) {
+    let ip_addr: std::net::IpAddr = if let Some(ip_param) = req.get_query_parameter(IP_QUERY_PARAM)
+    {
         match ip_param.parse() {
             Ok(parsed_ip) => parsed_ip,
             _ => req.get_client_ip_addr().unwrap(), // fallback to client's IP on parse error
@@ -465,7 +468,7 @@ fn client_ip_data(req: Request, mut resp: Response) -> Result<Response, Error> {
 
     // Use geo_lookup to get the Geo object based on the chosen IP address.
     let geo_data: fastly::geo::Geo = fastly::geo::geo_lookup(ip_addr).unwrap();
-   
+
     // Dynamically build the JSON object with the geo lookup results.
     let json_data = json!({
         "ip_address": ip_addr.to_string(),
