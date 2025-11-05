@@ -99,8 +99,8 @@
             
             // --- Check if we loaded with the challenge parameter ---
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('challenge-js')) {
-                logStatus('Page loaded with ?challenge-js.');
+            if (urlParams.has('challenge-client')) {
+                logStatus('Page loaded with ?challenge-client.');
                 logStatus('WAF challenge script would run now.');
                 // Optionally, you could try the fetch again here
             } else {
@@ -115,7 +115,7 @@
                 submitButton.disabled = true;
 
                 // This is the relative path from your requirements.
-                // const productionUrl = '/anything/post/';
+                const productionUrl = '/anything/post/';
 
                 // Get checkbox state
                 const blockCheckbox = document.getElementById('blockCheckbox');
@@ -124,7 +124,7 @@
                 // NOTE: For this demonstration to work, we must simulate the 406
                 // response. We use http.edgecompute.app for this. In your real environment,
                 // you would use `productionUrl`.
-                let demoUrl = '/anything/waf-intercept-demo/200';
+                let demoUrl = '/status/406';
 
                 // Add query param if checked
                 if (shouldAddBlockParam) {
