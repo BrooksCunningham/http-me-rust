@@ -1,0 +1,324 @@
+        /* Base container styling - Pre-allocate space to prevent layout shift */
+        .fastly-challenge {
+			content:"Powered by Fastly";
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            min-width: 140px; /* Reserve space for indicator + text */
+            position: relative;
+            contain: layout; /* Optimize rendering performance */
+        }
+
+        /* Initialize with a placeholder to prevent empty state */
+        /*.fastly-challenge:empty::before,
+        .fastly-challenge:not([data-challenge-status])::before {
+            content: "";
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            opacity: 0.5;
+            animation: gentlePulse 2s ease-in-out infinite;
+        }*/
+
+        /* Challenge indicator base - Force immediate rendering */
+        .fastly-challenge[data-challenge-status]::before {
+            content: "";
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            /* Force immediate paint in Firefox */
+            transform: translateZ(0) scale(1);
+            will-change: transform, background;
+            /* Ensure transitions work in Firefox */
+            transition-property: transform, box-shadow, background;
+            transition-duration: 0.3s;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Status text label - Ensure Firefox renders this */
+        .fastly-challenge[data-challenge-status]::after {
+            content: attr(data-status-text);
+            margin-left: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.025em;
+            opacity: 0;
+            transform: translateX(-10px) translateZ(0);
+            /* Delay animation to ensure it's visible */
+            animation: fadeInSlide 0.5s ease forwards;
+            animation-delay: 0.1s;
+            /* Force text rendering in Firefox */
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* âœ… COMPLETE STATE */
+        .fastly-challenge[data-challenge-status="complete"]::before {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            /* Ensure animation plays even on quick transitions */
+            animation: successPulse 0.8s ease both;
+            animation-fill-mode: both;
+        }
+
+        .fastly-challenge[data-challenge-status="complete"]::after {
+            content: "Verified";
+            color: #059669;
+            animation-delay: 0.3s; /* Delay text to sync with icon */
+        }
+
+        /* Checkmark icon for complete */
+        .fastly-challenge[data-challenge-status="complete"]::before {
+            background-image:
+                linear-gradient(135deg, #10b981 0%, #059669 100%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+            background-size: 100%, 18px 18px;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+        }
+
+        /* âŒ ERROR STATE */
+        .fastly-challenge[data-challenge-status="error"]::before {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            animation: errorShake 0.6s ease both;
+        }
+
+        .fastly-challenge[data-challenge-status="error"]::after {
+            content: "Error";
+            color: #dc2626;
+        }
+
+        .fastly-challenge[data-challenge-status="error"]::before {
+            background-image:
+                linear-gradient(135deg, #ef4444 0%, #dc2626 100%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E");
+            background-size: 100%, 18px 18px;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+        }
+
+        /* â³ STARTED STATE */
+        .fastly-challenge[data-challenge-status="started"]::before {
+            background: #ffffff;
+            border: 3px solid #f59e0b;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            /* Ensure animation starts immediately */
+            animation: gentlePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-play-state: running;
+        }
+
+        .fastly-challenge[data-challenge-status="started"]::after {
+            content: "Initializing...";
+            color: #d97706;
+        }
+
+        /* ðŸ”„ PROCESSING STATE - Firefox-safe spinner */
+        .fastly-challenge[data-challenge-status="processing"]::before {
+            background: #ffffff;
+            border: 3px solid #e5e7eb;
+            border-top-color: #3b82f6;
+            border-right-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            /* Use Firefox-compatible animation */
+            animation: spinSimple 1s linear infinite;
+            animation-play-state: running;
+            /* Force animation in Firefox */
+            -moz-animation: spinSimple 1s linear infinite;
+        }
+
+        .fastly-challenge[data-challenge-status="processing"]::after {
+            content: "Processing...";
+            color: #2563eb;
+            /* Ensure text shows immediately */
+            animation: fadeInSlide 0.3s ease forwards, textPulse 1.5s ease infinite;
+            animation-delay: 0s, 0.3s;
+        }
+
+        /* ðŸ” CAPTCHA PROMPTED STATE */
+        .fastly-challenge[data-challenge-status="captcha_prompted"]::before {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            animation: captchaBounce 0.8s ease both;
+        }
+
+        .fastly-challenge[data-challenge-status="captcha_prompted"]::after {
+            content: "Complete CAPTCHA";
+            color: #7c3aed;
+        }
+
+        .fastly-challenge[data-challenge-status="captcha_prompted"]::before {
+            background-image:
+                linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='11' rx='2' ry='2'%3E%3C/rect%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 100%, 18px 18px;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+        }
+
+        /* ===================================
+           FIREFOX-SPECIFIC OVERRIDES
+        =================================== */
+
+        @-moz-document url-prefix() {
+            /* Firefox-specific optimizations */
+            .fastly-challenge[data-challenge-status]::before {
+                /* Force repaint in Firefox */
+                backface-visibility: hidden;
+                perspective: 1000px;
+                transform-style: preserve-3d;
+            }
+
+            /* Ensure processing animation works in Firefox */
+            .fastly-challenge[data-challenge-status="processing"]::before {
+                animation-name: spinSimple !important;
+                animation-duration: 1s !important;
+                animation-timing-function: linear !important;
+                animation-iteration-count: infinite !important;
+            }
+
+            /* Force text to render immediately in Firefox */
+            .fastly-challenge[data-challenge-status]::after {
+                will-change: opacity, transform;
+            }
+        }
+
+        /* ===================================
+           ANIMATIONS (Firefox-optimized)
+        =================================== */
+
+        @keyframes gentlePulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1) translateZ(0);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(0.95) translateZ(0);
+            }
+        }
+
+        /* Firefox-compatible simple spin */
+        @keyframes spinSimple {
+            0% {
+                transform: rotate(0deg) translateZ(0);
+            }
+            100% {
+                transform: rotate(360deg) translateZ(0);
+            }
+        }
+
+        /* Firefox prefix for spin animation */
+        @-moz-keyframes spinSimple {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeInSlide {
+            0% {
+                opacity: 0;
+                transform: translateX(-10px) translateZ(0);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) translateZ(0);
+            }
+        }
+
+        @keyframes successPulse {
+            0% {
+                transform: scale(0.9) translateZ(0);
+                opacity: 0.8;
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% {
+                transform: scale(1.05) translateZ(0);
+                opacity: 1;
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                transform: scale(1) translateZ(0);
+                opacity: 1;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        @keyframes errorShake {
+            0%, 100% {
+                transform: translateX(0) translateZ(0);
+            }
+            10%, 30%, 50%, 70%, 90% {
+                transform: translateX(-2px) translateZ(0);
+            }
+            20%, 40%, 60%, 80% {
+                transform: translateX(2px) translateZ(0);
+            }
+        }
+
+        @keyframes textPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes captchaBounce {
+            0% {
+                transform: scale(0.85) translateZ(0);
+                opacity: 0.8;
+            }
+            40% {
+                transform: scale(1.1) translateZ(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) translateZ(0);
+                opacity: 1;
+            }
+        }
+
+        /* ===================================
+           HOVER EFFECTS (Optimized)
+        =================================== */
+
+        .fastly-challenge[data-challenge-status="complete"]:hover::before,
+        .fastly-challenge[data-challenge-status="error"]:hover::before {
+            transform: scale(1.1) translateZ(0);
+            transition: transform 0.2s ease;
+        }
+
+        /* ===================================
+           RESPONSIVE ADJUSTMENTS
+        =================================== */
+
+        @media (max-width: 480px) {
+            .fastly-challenge[data-challenge-status]::after {
+                font-size: 13px;
+            }
+
+            .fastly-challenge[data-challenge-status]::before {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        /* ===================================
+           DARK MODE SUPPORT (optional)
+        =================================== */
+
+        @media (prefers-color-scheme: dark) {
+            .fastly-challenge[data-challenge-status]::before {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
