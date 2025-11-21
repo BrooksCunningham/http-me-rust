@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>  
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="/_fs-ch-1T1wmsGaOgGaSxcX/assets/script.js"></script>
     <script src="/_fs-ch-1T1wmsGaOgGaSxcX/challenge.js" defer></script>
     <link rel="stylesheet" href="/static-assets/challenge.css">
-    
-  <title>Login Page</title>
+
+    <title>Login Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -39,7 +39,7 @@
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            box-sizing: border-box;
         }
 
         .login-form button {
@@ -51,13 +51,19 @@
             color: white;
             cursor: pointer;
             font-size: 16px;
+            transition: opacity 0.3s, background-color 0.3s;
         }
 
-        .login-form button:hover {
+        .login-form button:hover:not(:disabled) {
             background-color: #4a54e1;
         }
 
-        /* Added styles for the checkbox */
+        .login-form button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #5c67f2;
+        }
+
         .checkbox-container {
             display: flex;
             align-items: center;
@@ -76,34 +82,79 @@
             <h1>Login</h1>
             <input type="text" placeholder="Username" name="username" required>
             <input type="password" placeholder="Password" name="password" required>
-            
+
             <div class="checkbox-container">
                 <input type="checkbox" id="failLogin" name="failLogin">
                 <label for="failLogin">Simulate Failed Login</label>
-            </div>            
+            </div>
             <button type="submit">Log In</button>
-            <div class="fastly-challenge"></div>
+            <div class="fastly-challenge" data-challenge-status="complete"></div>
         </form>
     </div>
 
     <script>
-        // Select the form and the checkbox by their IDs
-        const loginForm = document.getElementById('loginForm');
-        const failCheckbox = document.getElementById('failLogin');
-        
-        // Store the original action URL
-        const originalAction = loginForm.action;
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const submitButton = loginForm.querySelector('button[type="submit"]');
+            const challengeElement = document.querySelector('[data-challenge-status]');
+            const failCheckbox = document.getElementById('failLogin');
 
-        // Listen for the form submission event
-        loginForm.addEventListener('submit', function(event) {
-            // Check if the checkbox is selected
-            if (failCheckbox.checked) {
-                // If it is, append the query parameter to the action URL
-                this.action = originalAction + '?status=401';
-            } else {
-                // Otherwise, ensure the action is the original URL
-                this.action = originalAction;
+            // Store the original action URL
+            const originalAction = loginForm.action;
+
+            // Function to update button state based on challenge status
+            function updateButtonState() {
+                const status = challengeElement?.getAttribute('data-challenge-status');
+                const isComplete = status === 'complete';
+
+                submitButton.disabled = !isComplete;
+
+                if (!isComplete) {
+                    submitButton.style.opacity = '0.5';
+                    submitButton.style.cursor = 'not-allowed';
+                } else {
+                    submitButton.style.opacity = '1';
+                    submitButton.style.cursor = 'pointer';
+                }
             }
+
+            // Set initial state
+            updateButtonState();
+
+            // Watch for changes to data-challenge-status attribute
+            if (challengeElement) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === 'data-challenge-status') {
+                            updateButtonState();
+                        }
+                    });
+                });
+
+                observer.observe(challengeElement, {
+                    attributes: true,
+                    attributeFilter: ['data-challenge-status']
+                });
+            }
+
+            // Handle form submission
+            loginForm.addEventListener('submit', function(event) {
+                // First check if challenge is complete
+                const status = challengeElement?.getAttribute('data-challenge-status');
+                if (status !== 'complete') {
+                    event.preventDefault();
+                    console.warn('Form submission blocked: Challenge not complete');
+                    return false;
+                }
+
+                // Then handle the fail checkbox logic
+                if (failCheckbox.checked) {
+                    this.action = originalAction + '?status=401';
+                } else {
+                    this.action = originalAction;
+                }
+            });
         });
     </script>
 </body>
