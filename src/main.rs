@@ -327,9 +327,6 @@ fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error>
 /// This is the default handler for the root path `/` and displays
 /// the OpenAPI documentation interface.
 ///
-/// Uses HTTP 103 Early Hints to preload critical resources before sending
-/// the full HTML response, improving page load performance.
-///
 /// # Arguments
 ///
 /// * `resp` - The response object to populate
@@ -342,29 +339,6 @@ fn status_result(status_u16: u16, mut resp: Response) -> Result<Response, Error>
 ///
 /// Returns an error if the KV store lookup fails.
 fn swagger_ui_html(mut resp: Response) -> Result<Response, Error> {
-    // Send HTTP 103 Early Hints to preload critical resources
-    // This allows the browser to start fetching these resources
-    // before the full HTML response is sent
-    let early_hints = Response::from_status(103)
-        .with_header(
-            "Link",
-            "</static-assets/swagger-ui.css>; rel=preload; as=style",
-        )
-        .with_header(
-            "Link",
-            "</static-assets/swagger-ui-bundle.js>; rel=preload; as=script",
-        )
-        .with_header(
-            "Link",
-            "</static-assets/swagger-ui-standalone-preset.js>; rel=preload; as=script",
-        )
-        .with_header(
-            "Link",
-            "</static-assets/openapi-spec.json>; rel=preload; as=fetch; crossorigin",
-        );
-
-    early_hints.send_to_client();
-
     // Define a KV store instance using the resource link name
     let store: KVStore = KVStore::open(KV_STORE_NAME)?.unwrap();
 
