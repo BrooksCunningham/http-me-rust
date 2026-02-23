@@ -24,7 +24,6 @@
 //! curl -H 'endpoint:status=302' https://http-me.edgecompute.app/any/path
 //! ```
 
-use fastly::handle::client_ip_addr;
 use fastly::http::{Method, StatusCode};
 use fastly::Body;
 use fastly::{Error, KVStore, Request, Response};
@@ -211,8 +210,7 @@ fn anything(mut req: Request, mut resp: Response) -> Result<Response, Error> {
         let req_header_val_str = v.to_str()?;
         req_headers_data[req_header_name_str] = serde_json::json!(req_header_val_str);
     }
-    // fastly::handle::client_ip_addr
-    let client_ip_addr: String = client_ip_addr().unwrap().to_string();
+    let client_ip_addr: String = req.get_client_ip_addr().unwrap().to_string();
 
     let req_url = req.get_url().to_owned();
 
