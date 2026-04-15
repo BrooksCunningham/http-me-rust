@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data for Input Validation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden border border-slate-100">
+        
+        <!-- Header -->
+        <header class="bg-indigo-600 px-8 py-6 text-white">
+            <h1 class="text-3xl font-bold tracking-tight">Input Validation Test Data</h1>
+            <p class="text-indigo-100 mt-2 text-sm">Safe, industry-standard dummy data for testing environments.</p>
+        </header>
+
+        <!-- Content -->
+        <main class="p-8 sm:p-10 space-y-12">
+
+            <!-- Section 1: Credit Cards -->
+            <section>
+                <h2 class="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                    <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm font-black">1</span>
+                    Test Credit Card Numbers
+                </h2>
+                <p class="text-slate-600 mb-6 leading-relaxed">
+                    These numbers are provided by major payment gateways (like Stripe and PayPal) for testing purposes. They pass the Luhn algorithm check but will be declined if attempted in a live environment.
+                </p>
+                
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-4">
+                    <ul class="space-y-3">
+                        <li class="flex justify-between sm:justify-start sm:gap-8 items-center">
+                            <span class="font-semibold text-slate-700 w-48">Visa:</span>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600">4111 1111 1111 1111</code>
+                        </li>
+                        <li class="flex justify-between sm:justify-start sm:gap-8 items-center">
+                            <span class="font-semibold text-slate-700 w-48">Mastercard:</span>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600">5555 5555 5555 4444</code>
+                        </li>
+                        <li class="flex justify-between sm:justify-start sm:gap-8 items-center">
+                            <span class="font-semibold text-slate-700 w-48">American Express (Amex):</span>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600">3782 822463 10005</code>
+                        </li>
+                        <li class="flex justify-between sm:justify-start sm:gap-8 items-center">
+                            <span class="font-semibold text-slate-700 w-48">Discover:</span>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600">6011 0000 0000 0000</code>
+                        </li>
+                        <li class="flex justify-between sm:justify-start sm:gap-8 items-center">
+                            <span class="font-semibold text-slate-700 w-48">JCB:</span>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600">3528 0000 0000 0000</code>
+                        </li>
+                        <li class="flex justify-between sm:justify-start sm:gap-8 items-center">
+                            <span class="font-semibold text-slate-700 w-48">Diners Club:</span>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600">3056 9309 0259 04</code>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                    <p class="text-sm text-amber-800 italic">
+                        <strong>Note:</strong> For test expiration dates, use any date in the future. For test CVVs, you can typically use <code class="font-mono font-bold bg-amber-100 px-1 rounded">123</code>, or <code class="font-mono font-bold bg-amber-100 px-1 rounded">1234</code> for Amex.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Section 2: Phone Numbers -->
+            <section>
+                <h2 class="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                    <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm font-black">2</span>
+                    Test Phone Numbers (US)
+                </h2>
+                <p class="text-slate-600 mb-6 leading-relaxed">
+                    The North American Numbering Plan (NANP) explicitly reserves the line numbers <code class="font-mono font-bold">0100</code> through <code class="font-mono font-bold">0199</code> within the <code class="font-mono font-bold">555</code> central office code specifically for fictional use in media and software testing.
+                </p>
+                
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-4">
+                    <ul class="space-y-3">
+                        <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600 w-fit">212-555-0150</code>
+                            <span class="text-slate-500 text-sm">(New York format)</span>
+                        </li>
+                        <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600 w-fit">310-555-0199</code>
+                            <span class="text-slate-500 text-sm">(California format)</span>
+                        </li>
+                        <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600 w-fit">202-555-0123</code>
+                            <span class="text-slate-500 text-sm">(DC format)</span>
+                        </li>
+                        <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600 w-fit">800-555-0199</code>
+                            <span class="text-slate-500 text-sm">(Toll-free format)</span>
+                        </li>
+                        <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-1 rounded text-indigo-600 w-fit">512-555-0100</code>
+                            <span class="text-slate-500 text-sm">(Texas format)</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                    <p class="text-sm text-amber-800 italic">
+                        If your validation just checks for a 10-digit structure or standard <code class="font-mono bg-amber-100 px-1 rounded">(XXX) XXX-XXXX</code> formatting, these will work perfectly without accidentally texting a real person.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Section 3: SSNs -->
+            <section>
+                <h2 class="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2 mb-4 flex items-center gap-2">
+                    <span class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm font-black">3</span>
+                    Test Social Security Numbers (SSNs)
+                </h2>
+                <p class="text-slate-600 mb-8 leading-relaxed">
+                    The Social Security Administration (SSA) does not provide official "test" numbers, but they do have strict rules about what numbers are impossible. You can use these guaranteed-invalid patterns to test both positive regex validation (making sure it accepts the <code class="font-mono font-bold bg-slate-100 px-1 rounded">XXX-XX-XXXX</code> format) and negative validation (writing logic to reject known impossible numbers).
+                </p>
+
+                <div class="space-y-8">
+                    <!-- Subsection A -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Impossible Area Numbers (First 3 digits):</h3>
+                        <p class="text-slate-600 text-sm mb-3">The SSA has never assigned numbers starting with <code class="font-mono bg-slate-100 px-1 rounded">000</code>, <code class="font-mono bg-slate-100 px-1 rounded">666</code>, or anything in the <code class="font-mono bg-slate-100 px-1 rounded">900-999</code> range.</p>
+                        <div class="flex flex-wrap gap-3">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded shadow-sm text-rose-600">000-12-3456</code>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded shadow-sm text-rose-600">666-98-7654</code>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded shadow-sm text-rose-600">999-55-1111</code>
+                        </div>
+                    </div>
+
+                    <!-- Subsection B -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Impossible Group Numbers (Middle 2 digits):</h3>
+                        <p class="text-slate-600 text-sm mb-3">The SSA does not use <code class="font-mono bg-slate-100 px-1 rounded">00</code> for the middle digits.</p>
+                        <div class="flex flex-wrap gap-3">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded shadow-sm text-rose-600">123-00-6789</code>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded shadow-sm text-rose-600">456-00-1234</code>
+                        </div>
+                    </div>
+
+                    <!-- Subsection C -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2">Impossible Serial Numbers (Last 4 digits):</h3>
+                        <p class="text-slate-600 text-sm mb-3">The SSA does not use <code class="font-mono bg-slate-100 px-1 rounded">0000</code> for the final digits.</p>
+                        <div class="flex flex-wrap gap-3">
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded shadow-sm text-rose-600">789-12-0000</code>
+                            <code class="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded shadow-sm text-rose-600">321-98-0000</code>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+        
+        <footer class="bg-slate-50 border-t border-slate-200 p-6 text-center">
+            <p class="text-slate-500 text-sm">Use these values strictly for testing and development environments.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
