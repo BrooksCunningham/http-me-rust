@@ -106,7 +106,7 @@ fn main() -> Result<(), Error> {
 /// Main request handler that routes requests to appropriate endpoint handlers.
 ///
 /// Routes are matched based on:
-/// - Custom headers (e.g., `endpoint:status=302`)
+/// - Custom headers (e.g., `endpoint:anything`, `endpoint:status=302`)
 /// - Query parameters (e.g., `?status=404`)
 /// - URL paths (e.g., `/status/200`, `/anything/test`)
 ///
@@ -127,6 +127,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     let mut resp = Response::new();
 
     resp = match req.get_header_str(ENDPOINT_HEADER) {
+        Some(ep) if ep == "anything" => return anything(req, resp),
         Some(ep) if ep.contains("status") => status(&req, resp)?,
         _ => resp,
     };

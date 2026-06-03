@@ -41,6 +41,10 @@ Echo back all request data (headers, body, query params):
 # Basic request inspection
 curl https://http-me.edgecompute.app/anything/test
 
+# Force request inspection from any path via header
+curl https://http-me.edgecompute.app/any/path \
+  -H 'endpoint:anything'
+
 # With query parameters
 curl https://http-me.edgecompute.app/anything/mypath?foo=bar&baz=qux
 
