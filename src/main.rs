@@ -127,7 +127,7 @@ fn handler(mut req: Request) -> Result<Response, Error> {
     let mut resp = Response::new();
 
     resp = match req.get_header_str(ENDPOINT_HEADER) {
-        Some(ep) if ep.contains("anything") => return anything(req, resp),
+        Some(ep) if ep == "anything" => return anything(req, resp),
         Some(ep) if ep.contains("status") => status(&req, resp)?,
         _ => resp,
     };
